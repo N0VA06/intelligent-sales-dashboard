@@ -1,209 +1,184 @@
+import React, { useState } from 'react';
 
-import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { RegionalSales } from '@/types';
-import { toast } from 'sonner';
+// Sample data for Indian cities with sales information
+const REGIONAL_SALES_DATA = [
+  { city: "Mumbai", state: "Maharashtra", lat: 19.0760, lng: 72.8777, revenue: 1250000, units: 4200 },
+  { city: "Delhi", state: "Delhi", lat: 28.7041, lng: 77.1025, revenue: 1180000, units: 3950 },
+  { city: "Bangalore", state: "Karnataka", lat: 12.9716, lng: 77.5946, revenue: 980000, units: 3600 },
+  { city: "Hyderabad", state: "Telangana", lat: 17.3850, lng: 78.4867, revenue: 820000, units: 3100 },
+  { city: "Chennai", state: "Tamil Nadu", lat: 13.0827, lng: 80.2707, revenue: 765000, units: 2800 },
+  { city: "Kolkata", state: "West Bengal", lat: 22.5726, lng: 88.3639, revenue: 690000, units: 2500 },
+  { city: "Pune", state: "Maharashtra", lat: 18.5204, lng: 73.8567, revenue: 580000, units: 2100 },
+  { city: "Ahmedabad", state: "Gujarat", lat: 23.0225, lng: 72.5714, revenue: 520000, units: 1800 },
+  { city: "Jaipur", state: "Rajasthan", lat: 26.9124, lng: 75.7873, revenue: 410000, units: 1500 },
+  { city: "Lucknow", state: "Uttar Pradesh", lat: 26.8467, lng: 80.9462, revenue: 370000, units: 1350 },
+  { city: "Chandigarh", state: "Chandigarh", lat: 30.7333, lng: 76.7794, revenue: 320000, units: 1200 },
+  { city: "Kochi", state: "Kerala", lat: 9.9312, lng: 76.2673, revenue: 290000, units: 1100 }
+];
 
-interface RegionalSalesMapProps {
-  data: RegionalSales[];
-}
-
-// Since we can't use real API keys in this demo, we need to prompt the user
-// to enter their own Mapbox token or use a placeholder visualization
-const RegionalSalesMap: React.FC<RegionalSalesMapProps> = ({ data }) => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState<string>('');
-  const [tokenEntered, setTokenEntered] = useState<boolean>(false);
+const RegionalSalesMap = () => {
+  const [selectedCity, setSelectedCity] = useState(null);
   
-  useEffect(() => {
-    if (!mapboxToken || !tokenEntered || !mapContainer.current) return;
-    
-    try {
-      mapboxgl.accessToken = mapboxToken;
-      
-      // Initialize map
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
-        center: [-98.5795, 39.8283], // Center of US
-        zoom: 3,
-      });
-      
-      // Add navigation controls
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-      
-      // Load map and add data
-      map.current.on('load', () => {
-        if (!map.current) return;
-        
-        // Add data source
-        map.current.addSource('sales', {
-          type: 'geojson',
-          data: {
-            type: 'FeatureCollection',
-            features: data.map(location => ({
-              type: 'Feature',
-              properties: {
-                city: location.city,
-                state: location.state,
-                revenue: location.revenue,
-                units: location.units
-              },
-              geometry: {
-                type: 'Point',
-                coordinates: [location.lng, location.lat]
-              }
-            }))
-          }
-        });
-        
-        // Add heat map layer
-        map.current.addLayer({
-          id: 'sales-heat',
-          type: 'heatmap',
-          source: 'sales',
-          paint: {
-            'heatmap-weight': [
-              'interpolate', ['linear'], ['get', 'revenue'],
-              200000, 0,
-              1000000, 1
-            ],
-            'heatmap-intensity': 1.5,
-            'heatmap-color': [
-              'interpolate', ['linear'], ['heatmap-density'],
-              0, 'rgba(0, 0, 255, 0)',
-              0.1, 'rgba(65, 105, 225, 0.5)',
-              0.3, 'rgba(0, 0, 255, 0.7)',
-              0.5, 'rgba(0, 0, 205, 0.9)',
-              0.7, 'rgb(0, 0, 153)',
-              1, 'rgb(0, 0, 120)'
-            ],
-            'heatmap-radius': 40,
-            'heatmap-opacity': 0.8
-          }
-        });
-        
-        // Add circle layer
-        map.current.addLayer({
-          id: 'sales-point',
-          type: 'circle',
-          source: 'sales',
-          paint: {
-            'circle-radius': [
-              'interpolate', ['linear'], ['get', 'revenue'],
-              300000, 5,
-              1200000, 15
-            ],
-            'circle-color': 'hsl(var(--primary))',
-            'circle-opacity': 0.7,
-            'circle-stroke-width': 1,
-            'circle-stroke-color': 'white'
-          }
-        });
-        
-        // Add popup on click
-        map.current.on('click', 'sales-point', (e) => {
-          if (!e.features || !map.current) return;
-          
-          const feature = e.features[0];
-          const props = feature.properties;
-          
-          // TypeScript fix: Safely handle coordinates
-          const coordinates = (feature.geometry as any).coordinates.slice() as [number, number];
-          
-          const formatted = {
-            city: props.city,
-            state: props.state,
-            revenue: new Intl.NumberFormat('en-US', { 
-              style: 'currency', 
-              currency: 'USD',
-              maximumFractionDigits: 0
-            }).format(props.revenue),
-            units: props.units.toLocaleString()
-          };
-          
-          new mapboxgl.Popup()
-            .setLngLat(coordinates)
-            .setHTML(`
-              <strong>${formatted.city}, ${formatted.state}</strong><br/>
-              Revenue: ${formatted.revenue}<br/>
-              Units Sold: ${formatted.units}
-            `)
-            .addTo(map.current);
-        });
-        
-        // Change cursor on hover
-        map.current.on('mouseenter', 'sales-point', () => {
-          if (map.current) map.current.getCanvas().style.cursor = 'pointer';
-        });
-        
-        map.current.on('mouseleave', 'sales-point', () => {
-          if (map.current) map.current.getCanvas().style.cursor = '';
-        });
-      });
-      
-      toast.success('Map loaded successfully!');
-    } catch (error) {
-      console.error('Error initializing map:', error);
-      toast.error('Error loading map. Please check your Mapbox token.');
-    }
-    
-    // Cleanup on unmount
-    return () => {
-      if (map.current) {
-        map.current.remove();
-      }
-    };
-  }, [data, mapboxToken, tokenEntered]);
+  // Calculate geographic bounds
+  const minLat = Math.min(...REGIONAL_SALES_DATA.map(d => d.lat));
+  const maxLat = Math.max(...REGIONAL_SALES_DATA.map(d => d.lat));
+  const minLng = Math.min(...REGIONAL_SALES_DATA.map(d => d.lng));
+  const maxLng = Math.max(...REGIONAL_SALES_DATA.map(d => d.lng));
   
-  const handleTokenSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (mapboxToken) {
-      setTokenEntered(true);
-    } else {
-      toast.error('Please enter a valid Mapbox token');
-    }
+  // Calculate revenue ranges for visualization
+  const minRevenue = Math.min(...REGIONAL_SALES_DATA.map(d => d.revenue));
+  const maxRevenue = Math.max(...REGIONAL_SALES_DATA.map(d => d.revenue));
+  
+  // SVG dimensions
+  const width = 800;
+  const height = 500;
+  const padding = 50;
+  
+  // Scale functions to convert lat/lng to SVG coordinates
+  const scaleX = (lng) => {
+    return ((lng - minLng) / (maxLng - minLng)) * (width - 2 * padding) + padding;
   };
   
-  if (!tokenEntered) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full">
-        <div className="max-w-lg w-full p-6 bg-card rounded-lg shadow-sm border">
-          <h3 className="text-lg font-medium mb-4">Mapbox API Token Required</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            To display the geographic heatmap, please enter your Mapbox public access token.
-            You can get one by signing up at <a href="https://www.mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-primary underline">mapbox.com</a>
-          </p>
-          <form onSubmit={handleTokenSubmit} className="space-y-4">
-            <div>
-              <input
-                type="text"
-                value={mapboxToken}
-                onChange={(e) => setMapboxToken(e.target.value)}
-                placeholder="Enter your Mapbox token (pk.eyJ1...)"
-                className="w-full p-2 border border-input rounded-md"
-              />
-            </div>
-            <button
-              type="submit"
-              className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
-            >
-              Load Map
-            </button>
-          </form>
-          <p className="text-xs text-muted-foreground mt-4">
-            Note: Your token will only be used client-side and will not be stored or transmitted anywhere.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const scaleY = (lat) => {
+    return height - (((lat - minLat) / (maxLat - minLat)) * (height - 2 * padding) + padding);
+  };
   
+  // Scale circle radius based on revenue
+  const scaleRadius = (revenue) => {
+    const minRadius = 5;
+    const maxRadius = 20;
+    return minRadius + ((revenue - minRevenue) / (maxRevenue - minRevenue)) * (maxRadius - minRadius);
+  };
+  
+  // Get color based on revenue
+  const getColor = (revenue) => {
+    const intensity = Math.floor((revenue - minRevenue) / (maxRevenue - minRevenue) * 255);
+    return `rgb(0, 0, ${100 + intensity})`;
+  };
+  
+  // Format currency
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
   return (
-    <div className="w-full h-full">
-      <div ref={mapContainer} className="w-full h-full rounded-md overflow-hidden" />
+    <div className="flex flex-col items-center w-full mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-4">Regional Sales Map</h2>
+      
+      <div className="w-full bg-slate-50 rounded-lg shadow-md p-4 mb-4">
+        <svg 
+          width="100%" 
+          height="500" 
+          viewBox={`0 0 ${width} ${height}`}
+          style={{ maxWidth: "100%", height: "auto" }}
+        >
+          {/* Background */}
+          <rect x="0" y="0" width={width} height={height} fill="#f8fafc" />
+          
+          {/* City markers */}
+          {REGIONAL_SALES_DATA.map((city) => (
+            <g 
+              key={city.city} 
+              onClick={() => setSelectedCity(selectedCity?.city === city.city ? null : city)}
+              style={{ cursor: "pointer" }}
+            >
+              {/* Heat circle */}
+              <circle
+                cx={scaleX(city.lng)}
+                cy={scaleY(city.lat)}
+                r={scaleRadius(city.revenue) * 2.5}
+                fill={getColor(city.revenue)}
+                opacity="0.2"
+              />
+              
+              {/* City marker */}
+              <circle
+                cx={scaleX(city.lng)}
+                cy={scaleY(city.lat)}
+                r={scaleRadius(city.revenue)}
+                fill={getColor(city.revenue)}
+                stroke="white"
+                strokeWidth="1.5"
+                opacity="0.8"
+              />
+              
+              {/* City name */}
+              <text
+                x={scaleX(city.lng)}
+                y={scaleY(city.lat) - scaleRadius(city.revenue) - 5}
+                textAnchor="middle"
+                fill="#334155"
+                fontSize="12"
+                fontWeight={selectedCity?.city === city.city ? "bold" : "normal"}
+              >
+                {city.city}
+              </text>
+            </g>
+          ))}
+        </svg>
+      </div>
+      
+      {/* Sales data table */}
+      <div className="w-full bg-white rounded-lg shadow-md p-4">
+        <h3 className="text-xl font-bold mb-3">Regional Sales Data</h3>
+        
+        {selectedCity ? (
+          <div className="mb-4">
+            <h4 className="text-lg font-semibold">{selectedCity.city}, {selectedCity.state}</h4>
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              <div className="p-3 bg-blue-50 rounded">
+                <div className="text-sm text-blue-800">Revenue</div>
+                <div className="text-xl font-medium">{formatCurrency(selectedCity.revenue)}</div>
+              </div>
+              <div className="p-3 bg-green-50 rounded">
+                <div className="text-sm text-green-800">Units Sold</div>
+                <div className="text-xl font-medium">{selectedCity.units.toLocaleString()}</div>
+              </div>
+            </div>
+            <button 
+              onClick={() => setSelectedCity(null)}
+              className="mt-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium"
+            >
+              Back to All Cities
+            </button>
+          </div>
+        ) : (
+          <table className="min-w-full">
+            <thead>
+              <tr className="border-b bg-gray-50">
+                <th className="text-left p-2">City</th>
+                <th className="text-left p-2">State</th>
+                <th className="text-right p-2">Revenue</th>
+                <th className="text-right p-2">Units</th>
+              </tr>
+            </thead>
+            <tbody>
+              {REGIONAL_SALES_DATA
+                .sort((a, b) => b.revenue - a.revenue)
+                .map((city) => (
+                  <tr 
+                    key={city.city} 
+                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setSelectedCity(city)}
+                  >
+                    <td className="p-2">{city.city}</td>
+                    <td className="p-2">{city.state}</td>
+                    <td className="p-2 text-right">{formatCurrency(city.revenue)}</td>
+                    <td className="p-2 text-right">{city.units.toLocaleString()}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+      
+      <div className="mt-4 text-sm text-gray-500">
+        Click on any city marker or table row to view detailed information.
+      </div>
     </div>
   );
 };
