@@ -1,0 +1,595 @@
+
+// Este archivo contiene los datos financieros universitarios basados en el informe Crowe
+
+export interface FinancialMetric {
+  id: string;
+  title: string;
+  description: string;
+  category: 'liquidity' | 'solvency' | 'profitability' | 'operation' | 'budget';
+  currentValue: number;
+  targetValue: number;
+  unit: string;
+  trend: 'up' | 'down' | 'stable';
+  status: 'positive' | 'warning' | 'negative';
+  data?: { year: number; actual: number; ideal?: number }[];
+  valueFormat?: string;
+}
+
+// Datos extrapolados del informe Crowe de la UACH
+export const financialMetrics: FinancialMetric[] = [
+  // LIQUIDEZ
+  {
+    id: 'liquidez-corriente',
+    title: 'Liquidez Corriente',
+    description: 'Capacidad para cumplir obligaciones a corto plazo (activos corrientes/pasivos corrientes)',
+    category: 'liquidity',
+    currentValue: 0.93,
+    targetValue: 1.5,
+    unit: 'ratio',
+    trend: 'down',
+    status: 'warning',
+    data: [
+      { year: 2015, actual: 1.2, ideal: 1.5 },
+      { year: 2016, actual: 1.1, ideal: 1.5 },
+      { year: 2017, actual: 0.98, ideal: 1.5 },
+      { year: 2018, actual: 0.95, ideal: 1.5 },
+      { year: 2019, actual: 0.93, ideal: 1.5 },
+    ],
+  },
+  {
+    id: 'capital-trabajo',
+    title: 'Capital de Trabajo',
+    description: 'Fondos disponibles para operar a corto plazo (Activos corrientes - Pasivos corrientes)',
+    category: 'liquidity',
+    currentValue: -2345000,
+    targetValue: 5000000,
+    unit: 'M$',
+    trend: 'down',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 2500000, ideal: 5000000 },
+      { year: 2016, actual: 1800000, ideal: 5000000 },
+      { year: 2017, actual: -500000, ideal: 5000000 },
+      { year: 2018, actual: -1500000, ideal: 5000000 },
+      { year: 2019, actual: -2345000, ideal: 5000000 },
+    ],
+    valueFormat: 'currency',
+  },
+  {
+    id: 'prueba-acida',
+    title: 'Prueba Ácida',
+    description: 'Capacidad de pago a corto plazo sin considerar inventarios',
+    category: 'liquidity',
+    currentValue: 0.85,
+    targetValue: 1.2,
+    unit: 'ratio',
+    trend: 'down',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 1.15, ideal: 1.2 },
+      { year: 2016, actual: 1.05, ideal: 1.2 },
+      { year: 2017, actual: 0.95, ideal: 1.2 },
+      { year: 2018, actual: 0.90, ideal: 1.2 },
+      { year: 2019, actual: 0.85, ideal: 1.2 },
+    ],
+  },
+  {
+    id: 'disponibilidad-inmediata',
+    title: 'Disponibilidad Inmediata',
+    description: 'Capacidad para atender obligaciones con fondos de alta liquidez',
+    category: 'liquidity',
+    currentValue: 0.31,
+    targetValue: 0.50,
+    unit: 'ratio',
+    trend: 'down',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 0.48, ideal: 0.50 },
+      { year: 2016, actual: 0.42, ideal: 0.50 },
+      { year: 2017, actual: 0.38, ideal: 0.50 },
+      { year: 2018, actual: 0.35, ideal: 0.50 },
+      { year: 2019, actual: 0.31, ideal: 0.50 },
+    ],
+  },
+  
+  // SOLVENCIA
+  {
+    id: 'endeudamiento',
+    title: 'Índice de Endeudamiento',
+    description: 'Proporción entre deuda y activos totales',
+    category: 'solvency',
+    currentValue: 0.76,
+    targetValue: 0.5,
+    unit: 'ratio',
+    trend: 'up',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 0.62, ideal: 0.5 },
+      { year: 2016, actual: 0.65, ideal: 0.5 },
+      { year: 2017, actual: 0.69, ideal: 0.5 },
+      { year: 2018, actual: 0.72, ideal: 0.5 },
+      { year: 2019, actual: 0.76, ideal: 0.5 },
+    ],
+  },
+  {
+    id: 'deuda-patrimonio',
+    title: 'Razón Deuda a Patrimonio',
+    description: 'Proporción entre pasivos totales y patrimonio',
+    category: 'solvency',
+    currentValue: 3.1,
+    targetValue: 1.0,
+    unit: 'ratio',
+    trend: 'up',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 1.8, ideal: 1.0 },
+      { year: 2016, actual: 2.1, ideal: 1.0 },
+      { year: 2017, actual: 2.5, ideal: 1.0 },
+      { year: 2018, actual: 2.8, ideal: 1.0 },
+      { year: 2019, actual: 3.1, ideal: 1.0 },
+    ],
+  },
+  {
+    id: 'pasivo-financiero',
+    title: 'Pasivo Financiero',
+    description: 'Total de deudas con instituciones financieras',
+    category: 'solvency',
+    currentValue: 72500000,
+    targetValue: 45000000,
+    unit: 'M$',
+    trend: 'up',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 50000000, ideal: 41000000 },
+      { year: 2016, actual: 55000000, ideal: 42000000 },
+      { year: 2017, actual: 62000000, ideal: 43000000 },
+      { year: 2018, actual: 68000000, ideal: 44000000 },
+      { year: 2019, actual: 72500000, ideal: 45000000 },
+    ],
+    valueFormat: 'currency',
+  },
+  {
+    id: 'cobertura-intereses',
+    title: 'Cobertura de Intereses',
+    description: 'Capacidad para pagar intereses de deuda con resultados operacionales',
+    category: 'solvency',
+    currentValue: -0.8,
+    targetValue: 2.5,
+    unit: 'ratio',
+    trend: 'down',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 1.8, ideal: 2.5 },
+      { year: 2016, actual: 1.2, ideal: 2.5 },
+      { year: 2017, actual: 0.5, ideal: 2.5 },
+      { year: 2018, actual: -0.3, ideal: 2.5 },
+      { year: 2019, actual: -0.8, ideal: 2.5 },
+    ],
+  },
+  {
+    id: 'apalancamiento-financiero',
+    title: 'Apalancamiento Financiero',
+    description: 'Nivel de endeudamiento en relación al patrimonio',
+    category: 'solvency',
+    currentValue: 2.8,
+    targetValue: 1.5,
+    unit: 'ratio',
+    trend: 'up',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 1.7, ideal: 1.5 },
+      { year: 2016, actual: 2.0, ideal: 1.5 },
+      { year: 2017, actual: 2.3, ideal: 1.5 },
+      { year: 2018, actual: 2.6, ideal: 1.5 },
+      { year: 2019, actual: 2.8, ideal: 1.5 },
+    ],
+  },
+  {
+    id: 'deuda-largo-plazo',
+    title: 'Deuda a Largo Plazo',
+    description: 'Proporción de pasivos a largo plazo respecto al total',
+    category: 'solvency',
+    currentValue: 0.68,
+    targetValue: 0.60,
+    unit: 'ratio',
+    trend: 'up',
+    status: 'warning',
+    data: [
+      { year: 2015, actual: 0.62, ideal: 0.60 },
+      { year: 2016, actual: 0.63, ideal: 0.60 },
+      { year: 2017, actual: 0.65, ideal: 0.60 },
+      { year: 2018, actual: 0.67, ideal: 0.60 },
+      { year: 2019, actual: 0.68, ideal: 0.60 },
+    ],
+  },
+  
+  // RENTABILIDAD
+  {
+    id: 'margen-operacional',
+    title: 'Margen Operacional',
+    description: 'Porcentaje de ingresos operacionales que se convierten en resultados operacionales',
+    category: 'profitability',
+    currentValue: -0.03,
+    targetValue: 0.05,
+    unit: 'ratio',
+    trend: 'down',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 0.02, ideal: 0.05 },
+      { year: 2016, actual: 0.01, ideal: 0.05 },
+      { year: 2017, actual: -0.01, ideal: 0.05 },
+      { year: 2018, actual: -0.02, ideal: 0.05 },
+      { year: 2019, actual: -0.03, ideal: 0.05 },
+    ],
+  },
+  {
+    id: 'rentabilidad-activos',
+    title: 'Rentabilidad sobre Activos (ROA)',
+    description: 'Eficiencia en el uso de activos para generar beneficios',
+    category: 'profitability',
+    currentValue: -0.02,
+    targetValue: 0.04,
+    unit: 'ratio',
+    trend: 'down',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 0.015, ideal: 0.04 },
+      { year: 2016, actual: 0.01, ideal: 0.04 },
+      { year: 2017, actual: -0.005, ideal: 0.04 },
+      { year: 2018, actual: -0.015, ideal: 0.04 },
+      { year: 2019, actual: -0.02, ideal: 0.04 },
+    ],
+  },
+  {
+    id: 'ebitda',
+    title: 'EBITDA',
+    description: 'Beneficio antes de intereses, impuestos, depreciaciones y amortizaciones',
+    category: 'profitability',
+    currentValue: -1500000,
+    targetValue: 5000000,
+    unit: 'M$',
+    trend: 'down',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 3500000, ideal: 5000000 },
+      { year: 2016, actual: 2500000, ideal: 5000000 },
+      { year: 2017, actual: 1000000, ideal: 5000000 },
+      { year: 2018, actual: -500000, ideal: 5000000 },
+      { year: 2019, actual: -1500000, ideal: 5000000 },
+    ],
+    valueFormat: 'currency',
+  },
+  {
+    id: 'margen-neto',
+    title: 'Margen Neto',
+    description: 'Porcentaje de ingresos que se convierte en beneficio neto',
+    category: 'profitability',
+    currentValue: -0.032,
+    targetValue: 0.03,
+    unit: 'ratio',
+    trend: 'down',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 0.015, ideal: 0.03 },
+      { year: 2016, actual: 0.008, ideal: 0.03 },
+      { year: 2017, actual: -0.01, ideal: 0.03 },
+      { year: 2018, actual: -0.025, ideal: 0.03 },
+      { year: 2019, actual: -0.032, ideal: 0.03 },
+    ],
+  },
+  {
+    id: 'resultado-ejercicio',
+    title: 'Resultado del Ejercicio',
+    description: 'Beneficio o pérdida del período',
+    category: 'profitability',
+    currentValue: -3800000,
+    targetValue: 3500000,
+    unit: 'M$',
+    trend: 'down',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 1500000, ideal: 3500000 },
+      { year: 2016, actual: 800000, ideal: 3500000 },
+      { year: 2017, actual: -1200000, ideal: 3500000 },
+      { year: 2018, actual: -2500000, ideal: 3500000 },
+      { year: 2019, actual: -3800000, ideal: 3500000 },
+    ],
+    valueFormat: 'currency',
+  },
+  {
+    id: 'rentabilidad-patrimonio',
+    title: 'Rentabilidad sobre Patrimonio (ROE)',
+    description: 'Rentabilidad obtenida sobre el patrimonio',
+    category: 'profitability',
+    currentValue: -0.08,
+    targetValue: 0.06,
+    unit: 'ratio',
+    trend: 'down',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 0.04, ideal: 0.06 },
+      { year: 2016, actual: 0.02, ideal: 0.06 },
+      { year: 2017, actual: -0.02, ideal: 0.06 },
+      { year: 2018, actual: -0.05, ideal: 0.06 },
+      { year: 2019, actual: -0.08, ideal: 0.06 },
+    ],
+  },
+  
+  // OPERACIÓN
+  {
+    id: 'eficiencia-personal',
+    title: 'Eficiencia del Personal',
+    description: 'Gasto en personal como porcentaje de los ingresos totales',
+    category: 'operation',
+    currentValue: 0.72,
+    targetValue: 0.6,
+    unit: 'ratio',
+    trend: 'up',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 0.65, ideal: 0.6 },
+      { year: 2016, actual: 0.67, ideal: 0.6 },
+      { year: 2017, actual: 0.69, ideal: 0.6 },
+      { year: 2018, actual: 0.71, ideal: 0.6 },
+      { year: 2019, actual: 0.72, ideal: 0.6 },
+    ],
+  },
+  {
+    id: 'rotacion-activos',
+    title: 'Rotación de Activos',
+    description: 'Eficiencia en el uso de activos para generar ingresos',
+    category: 'operation',
+    currentValue: 0.62,
+    targetValue: 0.8,
+    unit: 'ratio',
+    trend: 'down',
+    status: 'warning',
+    data: [
+      { year: 2015, actual: 0.73, ideal: 0.8 },
+      { year: 2016, actual: 0.70, ideal: 0.8 },
+      { year: 2017, actual: 0.67, ideal: 0.8 },
+      { year: 2018, actual: 0.65, ideal: 0.8 },
+      { year: 2019, actual: 0.62, ideal: 0.8 },
+    ],
+  },
+  {
+    id: 'ingresos-totales',
+    title: 'Ingresos Totales',
+    description: 'Suma de todos los ingresos operacionales y no operacionales',
+    category: 'operation',
+    currentValue: 120500000,
+    targetValue: 135000000,
+    unit: 'M$',
+    trend: 'up',
+    status: 'warning',
+    data: [
+      { year: 2015, actual: 105000000, ideal: 115000000 },
+      { year: 2016, actual: 110000000, ideal: 120000000 },
+      { year: 2017, actual: 114000000, ideal: 125000000 },
+      { year: 2018, actual: 118000000, ideal: 130000000 },
+      { year: 2019, actual: 120500000, ideal: 135000000 },
+    ],
+    valueFormat: 'currency',
+  },
+  {
+    id: 'gastos-operacionales',
+    title: 'Gastos Operacionales',
+    description: 'Total de gastos relacionados con la operación principal',
+    category: 'operation',
+    currentValue: 124500000,
+    targetValue: 110000000,
+    unit: 'M$',
+    trend: 'up',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 103000000, ideal: 100000000 },
+      { year: 2016, actual: 109000000, ideal: 102500000 },
+      { year: 2017, actual: 115000000, ideal: 105000000 },
+      { year: 2018, actual: 120000000, ideal: 107500000 },
+      { year: 2019, actual: 124500000, ideal: 110000000 },
+    ],
+    valueFormat: 'currency',
+  },
+  {
+    id: 'costo-por-alumno',
+    title: 'Costo por Alumno',
+    description: 'Gasto total dividido por el número de estudiantes',
+    category: 'operation',
+    currentValue: 7500,
+    targetValue: 6500,
+    unit: 'M$',
+    trend: 'up',
+    status: 'warning',
+    data: [
+      { year: 2015, actual: 6800, ideal: 6000 },
+      { year: 2016, actual: 7000, ideal: 6100 },
+      { year: 2017, actual: 7200, ideal: 6200 },
+      { year: 2018, actual: 7350, ideal: 6350 },
+      { year: 2019, actual: 7500, ideal: 6500 },
+    ],
+    valueFormat: 'currency',
+  },
+  {
+    id: 'ingreso-por-alumno',
+    title: 'Ingreso por Alumno',
+    description: 'Ingreso total dividido por el número de estudiantes',
+    category: 'operation',
+    currentValue: 7200,
+    targetValue: 8000,
+    unit: 'M$',
+    trend: 'up',
+    status: 'warning',
+    data: [
+      { year: 2015, actual: 6500, ideal: 7200 },
+      { year: 2016, actual: 6700, ideal: 7400 },
+      { year: 2017, actual: 6900, ideal: 7600 },
+      { year: 2018, actual: 7100, ideal: 7800 },
+      { year: 2019, actual: 7200, ideal: 8000 },
+    ],
+    valueFormat: 'currency',
+  },
+  {
+    id: 'fondos-investigacion',
+    title: 'Fondos de Investigación',
+    description: 'Ingresos provenientes de proyectos y subvenciones de investigación',
+    category: 'operation',
+    currentValue: 8500000,
+    targetValue: 12000000,
+    unit: 'M$',
+    trend: 'up',
+    status: 'warning',
+    data: [
+      { year: 2015, actual: 6000000, ideal: 8000000 },
+      { year: 2016, actual: 6800000, ideal: 9000000 },
+      { year: 2017, actual: 7500000, ideal: 10000000 },
+      { year: 2018, actual: 8000000, ideal: 11000000 },
+      { year: 2019, actual: 8500000, ideal: 12000000 },
+    ],
+    valueFormat: 'currency',
+  },
+  {
+    id: 'tasa-ocupacion-aulas',
+    title: 'Tasa de Ocupación de Aulas',
+    description: 'Porcentaje de utilización de la capacidad instalada',
+    category: 'operation',
+    currentValue: 0.65,
+    targetValue: 0.85,
+    unit: 'ratio',
+    trend: 'down',
+    status: 'warning',
+    data: [
+      { year: 2015, actual: 0.78, ideal: 0.85 },
+      { year: 2016, actual: 0.75, ideal: 0.85 },
+      { year: 2017, actual: 0.72, ideal: 0.85 },
+      { year: 2018, actual: 0.68, ideal: 0.85 },
+      { year: 2019, actual: 0.65, ideal: 0.85 },
+    ],
+  },
+  
+  // PRESUPUESTO
+  {
+    id: 'ejecucion-presupuestaria',
+    title: 'Ejecución Presupuestaria',
+    description: 'Porcentaje del presupuesto que ha sido ejecutado',
+    category: 'budget',
+    currentValue: 1.03,
+    targetValue: 1.0,
+    unit: 'ratio',
+    trend: 'up',
+    status: 'warning',
+    data: [
+      { year: 2015, actual: 0.99, ideal: 1.0 },
+      { year: 2016, actual: 1.01, ideal: 1.0 },
+      { year: 2017, actual: 1.02, ideal: 1.0 },
+      { year: 2018, actual: 1.025, ideal: 1.0 },
+      { year: 2019, actual: 1.03, ideal: 1.0 },
+    ],
+  },
+  {
+    id: 'desviacion-presupuestaria',
+    title: 'Desviación Presupuestaria',
+    description: 'Diferencia porcentual entre presupuesto planificado y ejecutado',
+    category: 'budget',
+    currentValue: 5.2,
+    targetValue: 0,
+    unit: '%',
+    trend: 'up',
+    status: 'warning',
+    data: [
+      { year: 2015, actual: 2.1, ideal: 0 },
+      { year: 2016, actual: 2.8, ideal: 0 },
+      { year: 2017, actual: 3.5, ideal: 0 },
+      { year: 2018, actual: 4.3, ideal: 0 },
+      { year: 2019, actual: 5.2, ideal: 0 },
+    ],
+  },
+  {
+    id: 'inversion-infraestructura',
+    title: 'Inversión en Infraestructura',
+    description: 'Porcentaje del presupuesto destinado a infraestructura',
+    category: 'budget',
+    currentValue: 0.03,
+    targetValue: 0.08,
+    unit: 'ratio',
+    trend: 'down',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 0.07, ideal: 0.08 },
+      { year: 2016, actual: 0.06, ideal: 0.08 },
+      { year: 2017, actual: 0.05, ideal: 0.08 },
+      { year: 2018, actual: 0.04, ideal: 0.08 },
+      { year: 2019, actual: 0.03, ideal: 0.08 },
+    ],
+  },
+  {
+    id: 'presupuesto-investigacion',
+    title: 'Presupuesto para Investigación',
+    description: 'Porcentaje del presupuesto destinado a investigación',
+    category: 'budget',
+    currentValue: 0.05,
+    targetValue: 0.10,
+    unit: 'ratio',
+    trend: 'down',
+    status: 'negative',
+    data: [
+      { year: 2015, actual: 0.08, ideal: 0.10 },
+      { year: 2016, actual: 0.07, ideal: 0.10 },
+      { year: 2017, actual: 0.06, ideal: 0.10 },
+      { year: 2018, actual: 0.055, ideal: 0.10 },
+      { year: 2019, actual: 0.05, ideal: 0.10 },
+    ],
+  },
+  {
+    id: 'presupuesto-docencia',
+    title: 'Presupuesto para Docencia',
+    description: 'Porcentaje del presupuesto destinado a actividades académicas',
+    category: 'budget',
+    currentValue: 0.58,
+    targetValue: 0.65,
+    unit: 'ratio',
+    trend: 'down',
+    status: 'warning',
+    data: [
+      { year: 2015, actual: 0.63, ideal: 0.65 },
+      { year: 2016, actual: 0.62, ideal: 0.65 },
+      { year: 2017, actual: 0.61, ideal: 0.65 },
+      { year: 2018, actual: 0.60, ideal: 0.65 },
+      { year: 2019, actual: 0.58, ideal: 0.65 },
+    ],
+  },
+];
+
+// Función para obtener métricas por categoría
+export const getMetricsByCategory = (category: string) => {
+  return financialMetrics.filter(metric => metric.category === category);
+};
+
+// Función para obtener todas las categorías
+export const getAllCategories = () => {
+  const categories = financialMetrics.map(metric => metric.category);
+  return [...new Set(categories)];
+};
+
+// Función para formatear valores
+export const formatValue = (value: number, unit: string, format?: string): string => {
+  if (format === 'currency') {
+    // Formatear como moneda en millones
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
+  
+  if (unit === 'ratio') {
+    // Formatear como porcentaje si es lo suficientemente pequeño, de lo contrario como decimal
+    if (Math.abs(value) < 0.1) {
+      return `${(value * 100).toFixed(2)}%`;
+    }
+    return value.toFixed(2);
+  }
+  
+  // Formateo predeterminado de números
+  return `${value.toLocaleString('es-CL')} ${unit}`;
+};
