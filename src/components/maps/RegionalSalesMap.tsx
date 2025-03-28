@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 // Sample data for Indian cities with sales information
 const REGIONAL_SALES_DATA = [
@@ -18,6 +21,38 @@ const REGIONAL_SALES_DATA = [
 
 const RegionalSalesMap = () => {
   const [selectedCity, setSelectedCity] = useState(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  // Check for dark mode on component mount and when theme changes
+  useEffect(() => {
+    // Check initial theme
+    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDarkMode(darkModeMediaQuery.matches || document.documentElement.classList.contains('dark'));
+    
+    // Add listener for theme changes
+    const handleThemeChange = (e) => {
+      setIsDarkMode(e.matches || document.documentElement.classList.contains('dark'));
+    };
+    
+    darkModeMediaQuery.addEventListener('change', handleThemeChange);
+    
+    // Also listen for manual theme toggle in the app
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.documentElement.classList.contains('dark'));
+        }
+      });
+    });
+    
+    observer.observe(document.documentElement, { attributes: true });
+    
+    // Cleanup
+    return () => {
+      darkModeMediaQuery.removeEventListener('change', handleThemeChange);
+      observer.disconnect();
+    };
+  }, []);
   
   // Calculate geographic bounds
   const minLat = Math.min(...REGIONAL_SALES_DATA.map(d => d.lat));
@@ -52,8 +87,16 @@ const RegionalSalesMap = () => {
   
   // Get color based on revenue
   const getColor = (revenue) => {
-    const intensity = Math.floor((revenue - minRevenue) / (maxRevenue - minRevenue) * 255);
-    return `rgb(0, 0, ${100 + intensity})`;
+    const intensity = Math.floor((revenue - minRevenue) / (maxRevenue - minRevenue) * 200);
+    
+    // Different color schemes for light/dark mode
+    if (isDarkMode) {
+      // Lighter blues for dark mode
+      return `rgb(${50 + intensity}, ${100 + intensity}, 255)`;
+    } else {
+      // Darker blues for light mode
+      return `rgb(0, 0, ${100 + intensity})`;
+    }
   };
   
   // Format currency
@@ -65,118 +108,130 @@ const RegionalSalesMap = () => {
     }).format(amount);
   };
 
+  // Background color for SVG
+  const mapBgColor = isDarkMode ? "#1f2937" : "#f8fafc"; // dark gray vs light gray
+  const textColor = isDarkMode ? "#d1d5db" : "#334155"; // light gray vs slate
+
   return (
     <div className="flex flex-col items-center w-full mx-auto p-4">
       <h2 className="text-2xl font-bold mb-4">Regional Sales Map</h2>
       
-      <div className="w-full bg-slate-50 rounded-lg shadow-md p-4 mb-4">
-        <svg 
-          width="100%" 
-          height="500" 
-          viewBox={`0 0 ${width} ${height}`}
-          style={{ maxWidth: "100%", height: "auto" }}
-        >
-          {/* Background */}
-          <rect x="0" y="0" width={width} height={height} fill="#f8fafc" />
-          
-          {/* City markers */}
-          {REGIONAL_SALES_DATA.map((city) => (
-            <g 
-              key={city.city} 
-              onClick={() => setSelectedCity(selectedCity?.city === city.city ? null : city)}
-              style={{ cursor: "pointer" }}
-            >
-              {/* Heat circle */}
-              <circle
-                cx={scaleX(city.lng)}
-                cy={scaleY(city.lat)}
-                r={scaleRadius(city.revenue) * 2.5}
-                fill={getColor(city.revenue)}
-                opacity="0.2"
-              />
-              
-              {/* City marker */}
-              <circle
-                cx={scaleX(city.lng)}
-                cy={scaleY(city.lat)}
-                r={scaleRadius(city.revenue)}
-                fill={getColor(city.revenue)}
-                stroke="white"
-                strokeWidth="1.5"
-                opacity="0.8"
-              />
-              
-              {/* City name */}
-              <text
-                x={scaleX(city.lng)}
-                y={scaleY(city.lat) - scaleRadius(city.revenue) - 5}
-                textAnchor="middle"
-                fill="#334155"
-                fontSize="12"
-                fontWeight={selectedCity?.city === city.city ? "bold" : "normal"}
+      <Card className="w-full mb-4">
+        <CardContent className="p-4">
+          <svg 
+            width="100%" 
+            height="500" 
+            viewBox={`0 0 ${width} ${height}`}
+            style={{ maxWidth: "100%", height: "auto" }}
+          >
+            {/* Background */}
+            <rect x="0" y="0" width={width} height={height} fill={mapBgColor} />
+            
+            {/* City markers */}
+            {REGIONAL_SALES_DATA.map((city) => (
+              <g 
+                key={city.city} 
+                onClick={() => setSelectedCity(selectedCity?.city === city.city ? null : city)}
+                style={{ cursor: "pointer" }}
               >
-                {city.city}
-              </text>
-            </g>
-          ))}
-        </svg>
-      </div>
+                {/* Heat circle */}
+                <circle
+                  cx={scaleX(city.lng)}
+                  cy={scaleY(city.lat)}
+                  r={scaleRadius(city.revenue) * 2.5}
+                  fill={getColor(city.revenue)}
+                  opacity="0.2"
+                />
+                
+                {/* City marker */}
+                <circle
+                  cx={scaleX(city.lng)}
+                  cy={scaleY(city.lat)}
+                  r={scaleRadius(city.revenue)}
+                  fill={getColor(city.revenue)}
+                  stroke={isDarkMode ? "#374151" : "white"}
+                  strokeWidth="1.5"
+                  opacity="0.8"
+                />
+                
+                {/* City name */}
+                <text
+                  x={scaleX(city.lng)}
+                  y={scaleY(city.lat) - scaleRadius(city.revenue) - 5}
+                  textAnchor="middle"
+                  fill={textColor}
+                  fontSize="12"
+                  fontWeight={selectedCity?.city === city.city ? "bold" : "normal"}
+                >
+                  {city.city}
+                </text>
+              </g>
+            ))}
+          </svg>
+        </CardContent>
+      </Card>
       
       {/* Sales data table */}
-      <div className="w-full bg-white rounded-lg shadow-md p-4">
-        <h3 className="text-xl font-bold mb-3">Regional Sales Data</h3>
-        
-        {selectedCity ? (
-          <div className="mb-4">
-            <h4 className="text-lg font-semibold">{selectedCity.city}, {selectedCity.state}</h4>
-            <div className="grid grid-cols-2 gap-4 mt-2">
-              <div className="p-3 bg-blue-50 rounded">
-                <div className="text-sm text-blue-800">Revenue</div>
-                <div className="text-xl font-medium">{formatCurrency(selectedCity.revenue)}</div>
+      <Card className="w-full">
+        <CardHeader className="pb-2">
+          <CardTitle>Regional Sales Data</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {selectedCity ? (
+            <div className="mb-4">
+              <h4 className="text-lg font-semibold">{selectedCity.city}, {selectedCity.state}</h4>
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <div className="p-3 rounded bg-primary/10">
+                  <div className="text-sm text-primary">Revenue</div>
+                  <div className="text-xl font-medium">{formatCurrency(selectedCity.revenue)}</div>
+                </div>
+                <div className="p-3 rounded bg-secondary/10">
+                  <div className="text-sm text-secondary">Units Sold</div>
+                  <div className="text-xl font-medium">{selectedCity.units.toLocaleString()}</div>
+                </div>
               </div>
-              <div className="p-3 bg-green-50 rounded">
-                <div className="text-sm text-green-800">Units Sold</div>
-                <div className="text-xl font-medium">{selectedCity.units.toLocaleString()}</div>
-              </div>
+              <Button 
+                onClick={() => setSelectedCity(null)}
+                variant="outline"
+                className="mt-4"
+              >
+                Back to All Cities
+              </Button>
             </div>
-            <button 
-              onClick={() => setSelectedCity(null)}
-              className="mt-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium"
-            >
-              Back to All Cities
-            </button>
-          </div>
-        ) : (
-          <table className="min-w-full">
-            <thead>
-              <tr className="border-b bg-gray-50">
-                <th className="text-left p-2">City</th>
-                <th className="text-left p-2">State</th>
-                <th className="text-right p-2">Revenue</th>
-                <th className="text-right p-2">Units</th>
-              </tr>
-            </thead>
-            <tbody>
-              {REGIONAL_SALES_DATA
-                .sort((a, b) => b.revenue - a.revenue)
-                .map((city) => (
-                  <tr 
-                    key={city.city} 
-                    className="border-b hover:bg-gray-50 cursor-pointer"
-                    onClick={() => setSelectedCity(city)}
-                  >
-                    <td className="p-2">{city.city}</td>
-                    <td className="p-2">{city.state}</td>
-                    <td className="p-2 text-right">{formatCurrency(city.revenue)}</td>
-                    <td className="p-2 text-right">{city.units.toLocaleString()}</td>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-2">City</th>
+                    <th className="text-left p-2">State</th>
+                    <th className="text-right p-2">Revenue</th>
+                    <th className="text-right p-2">Units</th>
                   </tr>
-                ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+                </thead>
+                <tbody>
+                  {REGIONAL_SALES_DATA
+                    .sort((a, b) => b.revenue - a.revenue)
+                    .map((city) => (
+                      <tr 
+                        key={city.city} 
+                        className="border-b hover:bg-accent cursor-pointer"
+                        onClick={() => setSelectedCity(city)}
+                      >
+                        <td className="p-2">{city.city}</td>
+                        <td className="p-2">{city.state}</td>
+                        <td className="p-2 text-right">{formatCurrency(city.revenue)}</td>
+                        <td className="p-2 text-right">{city.units.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       
-      <div className="mt-4 text-sm text-gray-500">
+      <div className="mt-4 text-sm text-muted-foreground">
         Click on any city marker or table row to view detailed information.
       </div>
     </div>
