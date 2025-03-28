@@ -24,11 +24,11 @@ const ThemeToggle: React.FC = () => {
     if (isDark) {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('theme', 'light');
-      toast.success('Light mode activated');
+      //toast.success('Light mode activated');
     } else {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
-      toast.success('Dark mode activated');
+      //toast.success('Dark mode activated');
     }
   };
   
