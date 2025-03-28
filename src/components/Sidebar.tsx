@@ -119,13 +119,13 @@ const Sidebar = () => {
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    onClick={() => handleNavigation('Descargar informe', '/download')}
+                    onClick={() => handleNavigation('Downloads', '/download')}
                     className="w-10 h-10 flex items-center justify-center rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors"
                   >
                     <Download className="w-5 h-5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="right">Descargar informe</TooltipContent>
+                <TooltipContent side="right">Downloads</TooltipContent>
               </Tooltip>
             </li>
             <li>
@@ -134,13 +134,13 @@ const Sidebar = () => {
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    onClick={() => handleNavigation('Información', '/info')}
+                    onClick={() => handleNavigation('Information', '/info')}
                     className="w-10 h-10 flex items-center justify-center rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors"
                   >
                     <Info className="w-5 h-5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="right">Información</TooltipContent>
+                <TooltipContent side="right">Information</TooltipContent>
               </Tooltip>
             </li>
             <li>
@@ -149,13 +149,13 @@ const Sidebar = () => {
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    onClick={() => handleNavigation('Configuración', '/settings')}
+                    onClick={() => handleNavigation('Settings', '/settings')}
                     className="w-10 h-10 flex items-center justify-center rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors"
                   >
                     <Settings className="w-5 h-5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="right">Configuración</TooltipContent>
+                <TooltipContent side="right">Settings</TooltipContent>
               </Tooltip>
             </li>
           </ul>
