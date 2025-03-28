@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -44,9 +43,9 @@ const KeyPoints = () => {
             transition={{ duration: 0.5 }}
             className="mb-10"
           >
-            <h1 className="text-3xl font-bold mb-2">Key Points from Crowe Report</h1>
+            <h1 className="text-3xl font-bold mb-2">Sales Performance Dashboard</h1>
             <p className="text-muted-foreground">
-              Executive summary of findings and recommendations from UACH's financial assessment
+              Quarterly sales analysis and strategic insights for Q2 2024
             </p>
           </motion.div>
           
@@ -56,16 +55,16 @@ const KeyPoints = () => {
             animate="visible"
             className="grid grid-cols-1 gap-8"
           >
-            {/* Diagnosis */}
+            {/* Current Performance */}
             <motion.div variants={itemVariants}>
               <Card className="overflow-hidden border-l-8 border-l-destructive">
                 <CardHeader className="bg-destructive/10">
                   <div className="flex items-center gap-3">
                     <AlertTriangle className="h-6 w-6 text-destructive" />
-                    <CardTitle>Current Situation Assessment</CardTitle>
+                    <CardTitle>Current Sales Performance</CardTitle>
                   </div>
                   <CardDescription>
-                    Critical findings about the University's financial situation
+                    Key metrics and critical observations from recent sales data
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
@@ -74,16 +73,16 @@ const KeyPoints = () => {
                       <AccordionTrigger className="font-medium">
                         <div className="flex items-center gap-2">
                           <TrendingDown className="h-5 w-5 text-destructive" />
-                          <span>Structural Financial Crisis</span>
+                          <span>Revenue Challenges</span>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent>
                         <ul className="ml-9 list-disc space-y-2 text-muted-foreground">
-                          <li>Accumulated operational deficit of approximately $20 million between 2015-2019.</li>
-                          <li>Equity reduced by 42% in the same period.</li>
-                          <li>Severe illiquidity with negative working capital of -$10.434 million by 2019.</li>
-                          <li>Financial debt increased from $13 million in 2015 to $28 million in 2019.</li>
-                          <li>Widespread arrears with suppliers and creditors, with overdue debts of $5 million.</li>
+                          <li>Total quarterly revenue at $4.2 million, 15% below target.</li>
+                          <li>Consistent underperformance in enterprise software segment.</li>
+                          <li>Customer acquisition cost increased by 22% compared to last quarter.</li>
+                          <li>Churn rate elevated at 8.5%, significantly above industry benchmark of 5%.</li>
+                          <li>Conversion rates dropped from 3.2% to 2.7% across key product lines.</li>
                         </ul>
                       </AccordionContent>
                     </AccordionItem>
@@ -92,16 +91,16 @@ const KeyPoints = () => {
                       <AccordionTrigger className="font-medium">
                         <div className="flex items-center gap-2">
                           <XCircle className="h-5 w-5 text-destructive" />
-                          <span>Operational Deficiencies</span>
+                          <span>Sales Channel Performance</span>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent>
                         <ul className="ml-9 list-disc space-y-2 text-muted-foreground">
-                          <li>Academic overload with a student/teacher ratio of 7.1 (below the average of 12.5 in similar universities).</li>
-                          <li>Low utilization rate of academic infrastructure (36.4% on average).</li>
-                          <li>Educational costs per student (UF 113) exceed income per student (UF 103).</li>
-                          <li>Programs with low enrollment and high dropout rates generating losses of more than $3 million annually.</li>
-                          <li>Inefficient management of administrative staff, with a student/staff ratio of 6.8 (below the optimal 12).</li>
+                          <li>Direct sales team struggling with 35% of quota attainment.</li>
+                          <li>Online channel showing minimal growth, only 2.3% increase.</li>
+                          <li>Partner network generating 40% less revenue than projected.</li>
+                          <li>Average deal size shrinking from $85,000 to $62,000.</li>
+                          <li>Sales cycle length extended by 18 days on average.</li>
                         </ul>
                       </AccordionContent>
                     </AccordionItem>
@@ -110,17 +109,16 @@ const KeyPoints = () => {
                       <AccordionTrigger className="font-medium">
                         <div className="flex items-center gap-2">
                           <XCircle className="h-5 w-5 text-destructive" />
-                          <span>Management Issues</span>
+                          <span>Product Line Analysis</span>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent>
                         <ul className="ml-9 list-disc space-y-2 text-muted-foreground">
-                          <li>Absence of medium and long-term strategic financial planning.</li>
-                          <li>Fragmented administrative processes without traceability or control.</li>
-                          <li>Disintegrated information systems that prevent effective management.</li>
-                          <li>Historical cost overruns consistently exceeding the budget by 12-15%.</li>
-                          <li>Poor internal control without adequate segregation of duties.</li>
-                          <li>Unreliable financial and accounting information, with multiple errors and omissions.</li>
+                          <li>Cloud solution sales down 25% quarter-over-quarter.</li>
+                          <li>Enterprise security products remain only bright spot with 12% growth.</li>
+                          <li>Legacy product lines contributing to 60% of total revenue.</li>
+                          <li>New product launches underperforming with only 1.5% market penetration.</li>
+                          <li>Pricing strategy inconsistent across different market segments.</li>
                         </ul>
                       </AccordionContent>
                     </AccordionItem>
@@ -135,10 +133,10 @@ const KeyPoints = () => {
                 <CardHeader className="bg-amber-500/10">
                   <div className="flex items-center gap-3">
                     <Lightbulb className="h-6 w-6 text-amber-500" />
-                    <CardTitle>Causes of the Current Situation</CardTitle>
+                    <CardTitle>Root Causes of Sales Decline</CardTitle>
                   </div>
                   <CardDescription>
-                    Determining factors that have led to the financial crisis
+                    Identifying key factors impacting sales performance
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
@@ -146,60 +144,55 @@ const KeyPoints = () => {
                     <div className="p-4 rounded-lg bg-amber-50/50 border border-amber-100">
                       <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
                         <span className="flex h-6 w-6 rounded-full bg-amber-500/20 items-center justify-center">1</span>
-                        Reactive Institutional Management
+                        Market Misalignment
                       </h3>
                       <p className="text-muted-foreground ml-8">
-                        The university has operated without effective strategic or financial planning, 
-                        responding to events instead of anticipating them. Lack of strategic thinking 
-                        has prevented adaptation to the changing landscape of higher education.
+                        Product offerings not fully aligned with current market needs. 
+                        Insufficient market research and slow adaptation to emerging customer requirements.
                       </p>
                     </div>
                     
                     <div className="p-4 rounded-lg bg-amber-50/50 border border-amber-100">
                       <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
                         <span className="flex h-6 w-6 rounded-full bg-amber-500/20 items-center justify-center">2</span>
-                        Unsustainable Academic Model
+                        Sales Enablement Gaps
                       </h3>
                       <p className="text-muted-foreground ml-8">
-                        Proliferation of programs with low demand and duplication of offerings between campuses. 
-                        The cost per student significantly exceeds income, generating structural losses. 
-                        Academic overload and operational inefficiency aggravate the situation.
+                        Inadequate training and support for sales teams. Outdated sales collateral 
+                        and lack of effective sales enablement tools hampering performance.
                       </p>
                     </div>
                     
                     <div className="p-4 rounded-lg bg-amber-50/50 border border-amber-100">
                       <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
                         <span className="flex h-6 w-6 rounded-full bg-amber-500/20 items-center justify-center">3</span>
-                        Deficient Administrative Processes
+                        Competitive Pressure
                       </h3>
                       <p className="text-muted-foreground ml-8">
-                        Fragmented workflows, disintegrated systems, and weak internal control have 
-                        generated severe operational inefficiencies. The lack of reliable data prevents 
-                        effective and timely decision-making.
+                        Increased market competition with more agile competitors offering 
+                        more innovative solutions at competitive pricing.
                       </p>
                     </div>
                     
                     <div className="p-4 rounded-lg bg-amber-50/50 border border-amber-100">
                       <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
                         <span className="flex h-6 w-6 rounded-full bg-amber-500/20 items-center justify-center">4</span>
-                        Inadequate Institutional Governance
+                        Customer Experience Challenges
                       </h3>
                       <p className="text-muted-foreground ml-8">
-                        University governance structures that do not promote accountability or 
-                        facilitate agile decision-making. Excessive politicization of academic 
-                        and administrative decisions that should be based on technical criteria.
+                        Declining customer satisfaction due to complex onboarding processes, 
+                        slow technical support, and limited post-sales engagement.
                       </p>
                     </div>
                     
                     <div className="p-4 rounded-lg bg-amber-50/50 border border-amber-100">
                       <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
                         <span className="flex h-6 w-6 rounded-full bg-amber-500/20 items-center justify-center">5</span>
-                        Resistance to Change
+                        Technological Lag
                       </h3>
                       <p className="text-muted-foreground ml-8">
-                        Institutional culture reluctant to modify established practices despite their 
-                        evident ineffectiveness. Absence of incentives for innovation and continuous 
-                        improvement in administrative and academic processes.
+                        Failure to integrate advanced sales technologies like AI-driven 
+                        lead scoring, predictive analytics, and automated follow-up systems.
                       </p>
                     </div>
                   </div>
@@ -213,10 +206,10 @@ const KeyPoints = () => {
                 <CardHeader className="bg-green-500/10">
                   <div className="flex items-center gap-3">
                     <Check className="h-6 w-6 text-green-500" />
-                    <CardTitle>Proposed Solutions</CardTitle>
+                    <CardTitle>Strategic Sales Improvement Plan</CardTitle>
                   </div>
                   <CardDescription>
-                    Strategic recommendations to resolve the financial crisis
+                    Actionable strategies to revitalize sales performance
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
@@ -225,19 +218,19 @@ const KeyPoints = () => {
                       <AccordionTrigger className="font-medium">
                         <div className="flex items-center gap-2">
                           <Target className="h-5 w-5 text-green-600" />
-                          <span>Academic Restructuring</span>
+                          <span>Product Strategy Realignment</span>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent>
                         <ul className="ml-9 list-disc space-y-2 text-muted-foreground">
-                          <li>Reduce academic offerings by 30%, eliminating deficit programs.</li>
-                          <li>Increase student/teacher ratio to a minimum of 12 students per professor.</li>
-                          <li>Adjust academic workload to optimize resources (30% increase in efficiency).</li>
-                          <li>Unify duplicate academic departments between campuses, reducing structure by 25%.</li>
-                          <li>Implement a results-based academic performance evaluation system.</li>
+                          <li>Conduct comprehensive market research to identify unmet customer needs.</li>
+                          <li>Develop 2-3 new product variants targeting specific market segments.</li>
+                          <li>Sunset underperforming product lines with less than 5% market share.</li>
+                          <li>Implement agile product development cycle with quarterly iterations.</li>
+                          <li>Establish dedicated innovation team for continuous product enhancement.</li>
                         </ul>
                         <div className="mt-4 p-3 bg-green-50 rounded-md border border-green-100">
-                          <p className="text-sm font-medium text-green-800">Estimated impact: Annual savings of $6 million</p>
+                          <p className="text-sm font-medium text-green-800">Estimated impact: 20% revenue growth potential</p>
                         </div>
                       </AccordionContent>
                     </AccordionItem>
@@ -246,19 +239,19 @@ const KeyPoints = () => {
                       <AccordionTrigger className="font-medium">
                         <div className="flex items-center gap-2">
                           <PiggyBank className="h-5 w-5 text-green-600" />
-                          <span>Financial Restructuring</span>
+                          <span>Sales Enablement Transformation</span>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent>
                         <ul className="ml-9 list-disc space-y-2 text-muted-foreground">
-                          <li>Refinance current debt ($28 million) with state guarantee to reduce interest.</li>
-                          <li>Implement a 24-month staggered payment plan for suppliers.</li>
-                          <li>Reduce administrative expenses by 20% through process optimization.</li>
-                          <li>Sell non-strategic assets worth $5 million to reduce liabilities.</li>
-                          <li>Establish a financial stabilization fund with at least $3 million.</li>
+                          <li>Implement AI-powered sales intelligence platform.</li>
+                          <li>Develop comprehensive sales training program with quarterly workshops.</li>
+                          <li>Create personalized sales playbooks for each product line.</li>
+                          <li>Introduce performance-based compensation restructuring.</li>
+                          <li>Establish mentorship program pairing top performers with newer sales representatives.</li>
                         </ul>
                         <div className="mt-4 p-3 bg-green-50 rounded-md border border-green-100">
-                          <p className="text-sm font-medium text-green-800">Estimated impact: Liquidity improvement of $8 million</p>
+                          <p className="text-sm font-medium text-green-800">Estimated impact: 30% improvement in sales productivity</p>
                         </div>
                       </AccordionContent>
                     </AccordionItem>
@@ -267,19 +260,19 @@ const KeyPoints = () => {
                       <AccordionTrigger className="font-medium">
                         <div className="flex items-center gap-2">
                           <Book className="h-5 w-5 text-green-600" />
-                          <span>Administrative Reform</span>
+                          <span>Customer Experience Enhancement</span>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent>
                         <ul className="ml-9 list-disc space-y-2 text-muted-foreground">
-                          <li>Implement an integrated ERP for all administrative processes.</li>
-                          <li>Centralize duplicate administrative functions between campuses and faculties.</li>
-                          <li>Reduce administrative staff by adjusting the student/staff ratio to 12:1.</li>
-                          <li>Establish a management-by-objectives system with performance indicators.</li>
-                          <li>Implement a training program to professionalize university management.</li>
+                          <li>Redesign customer onboarding process for simplicity and speed.</li>
+                          <li>Implement 24/7 multi-channel technical support.</li>
+                          <li>Develop customer success program with dedicated account managers.</li>
+                          <li>Create comprehensive self-service knowledge base.</li>
+                          <li>Establish quarterly business review process for enterprise clients.</li>
                         </ul>
                         <div className="mt-4 p-3 bg-green-50 rounded-md border border-green-100">
-                          <p className="text-sm font-medium text-green-800">Estimated impact: Annual savings of $3.5 million</p>
+                          <p className="text-sm font-medium text-green-800">Estimated impact: Reduce churn by 50%</p>
                         </div>
                       </AccordionContent>
                     </AccordionItem>
@@ -288,19 +281,19 @@ const KeyPoints = () => {
                       <AccordionTrigger className="font-medium">
                         <div className="flex items-center gap-2">
                           <Lightbulb className="h-5 w-5 text-green-600" />
-                          <span>Governance and Planning</span>
+                          <span>Strategic Channel Optimization</span>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent>
                         <ul className="ml-9 list-disc space-y-2 text-muted-foreground">
-                          <li>Reform university statutes to streamline strategic decision-making.</li>
-                          <li>Implement a budget-linked strategic planning system.</li>
-                          <li>Establish a finance committee with external expert participation.</li>
-                          <li>Create a management control unit with authority over all faculties.</li>
-                          <li>Implement quarterly accountability meetings with financial and academic KPIs.</li>
+                          <li>Reevaluate and restructure partner network.</li>
+                          <li>Develop targeted digital marketing campaigns.</li>
+                          <li>Invest in account-based marketing strategies.</li>
+                          <li>Expand direct sales team with specialized industry experts.</li>
+                          <li>Implement advanced lead scoring and qualification process.</li>
                         </ul>
                         <div className="mt-4 p-3 bg-green-50 rounded-md border border-green-100">
-                          <p className="text-sm font-medium text-green-800">Estimated impact: 25% improvement in operational efficiency</p>
+                          <p className="text-sm font-medium text-green-800">Estimated impact: 25% increase in qualified leads</p>
                         </div>
                       </AccordionContent>
                     </AccordionItem>
@@ -308,13 +301,13 @@ const KeyPoints = () => {
                   
                   <div className="mt-8 p-4 rounded-lg bg-green-50 border border-green-200">
                     <h3 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
-                      <Check className="h-5 w-5" /> Recovery Plan Conclusion
+                      <Check className="h-5 w-5" /> Strategic Recovery Conclusion
                     </h3>
                     <p className="text-muted-foreground">
-                      The comprehensive implementation of these proposals would restore financial sustainability 
-                      within an estimated 36-month period, with operational balance starting from month 18. 
-                      The process requires strong institutional leadership, temporary government support, 
-                      and a determined commitment to structural change.
+                      Full implementation of these strategies is projected to restore sales momentum 
+                      within a 12-month period, with initial performance improvements expected 
+                      in the first quarter. Success requires cross-functional collaboration, 
+                      leadership commitment, and agile execution.
                     </p>
                   </div>
                 </CardContent>
@@ -327,10 +320,10 @@ const KeyPoints = () => {
           <div className="container px-4 mx-auto">
             <div className="flex flex-col md:flex-row items-center justify-between gap-2">
               <p className="text-sm text-muted-foreground">
-                UACH Financial Dashboard - Based on Crowe Audit Report
+                Sales Performance Dashboard - Q2 2024
               </p>
               <p className="text-sm text-muted-foreground">
-                Data from 2015-2019 period
+                Confidential Internal Report
               </p>
             </div>
           </div>
