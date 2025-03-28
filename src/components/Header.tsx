@@ -18,10 +18,10 @@ const Header = () => {
             </div>
             <div className="flex flex-col">
               <h1 className="text-2xl font-medium text-foreground">
-                Dashboard Financiero UACH
+                Sales Dashboard
               </h1>
               <p className="text-sm text-muted-foreground">
-                Visualización de indicadores económicos
+                Visualize and interpret your data more intelligently
               </p>
             </div>
           </div>
