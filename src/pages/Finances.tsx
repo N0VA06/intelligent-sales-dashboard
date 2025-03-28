@@ -35,9 +35,9 @@ const Finances = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <h2 className="text-3xl font-bold tracking-tight mb-2">UACH Financial Reform</h2>
+              <h2 className="text-3xl font-bold tracking-tight mb-2">Sales Dashboard</h2>
               <p className="text-muted-foreground">
-                Concrete proposals to restore financial sustainability to our university
+                Concrete proposals to improve the sales of our organization
               </p>
             </motion.div>
 
