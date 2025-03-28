@@ -12,7 +12,7 @@ const Sidebar = () => {
 
   const handleNavigation = (destination: string, path: string) => {
     navigate(path);
-    toast.info(`Navegando a ${destination}`);
+    toast.info(`Navigate to ${destination}`);
   };
 
   const isActive = (path: string) => location.pathname === path;
@@ -68,13 +68,13 @@ const Sidebar = () => {
                     <Button 
                       variant="ghost" 
                       size="icon"
-                      onClick={() => handleNavigation('Puntos Clave', '/key-points')}
+                      onClick={() => handleNavigation('Current Staus', '/key-points')}
                       className={`w-10 h-10 flex items-center justify-center rounded-xl ${isActive('/key-points') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors'}`}
                     >
                       <CircleDollarSign className="w-5 h-5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="right">Puntos Clave</TooltipContent>
+                  <TooltipContent side="right">Current Staus</TooltipContent>
                 </Tooltip>
               </li>
               <li>
@@ -83,13 +83,13 @@ const Sidebar = () => {
                     <Button 
                       variant="ghost" 
                       size="icon"
-                      onClick={() => handleNavigation('Finanzas', '/finances')}
+                      onClick={() => handleNavigation('Solutions', '/finances')}
                       className={`w-10 h-10 flex items-center justify-center rounded-xl ${isActive('/finances') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors'}`}
                     >
                       <LineChart className="w-5 h-5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="right">Finanzas</TooltipContent>
+                  <TooltipContent side="right">Solutions</TooltipContent>
                 </Tooltip>
               </li>
               <li>
@@ -98,13 +98,13 @@ const Sidebar = () => {
                     <Button 
                       variant="ghost" 
                       size="icon"
-                      onClick={() => handleNavigation('Informe', '/report')}
+                      onClick={() => handleNavigation('Advanced Analytics', '/report')}
                       className="w-10 h-10 flex items-center justify-center rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors"
                     >
                       <BookOpen className="w-5 h-5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="right">Informe</TooltipContent>
+                  <TooltipContent side="right">Advanced Analytics</TooltipContent>
                 </Tooltip>
               </li>
             </ul>
