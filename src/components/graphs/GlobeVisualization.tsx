@@ -1,129 +1,175 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe as GlobeIcon } from 'lucide-react';
+import { Globe } from 'lucide-react';
 
-// Note: You'll need to install these dependencies:
-// npm install globe.gl three
-
+// Globe Visualization Component using Canvas API instead of Three.js
 const GlobeVisualization = ({ data, isVisible }) => {
-  const globeContainerRef = useRef(null);
+  const canvasRef = useRef(null);
   const [isClient, setIsClient] = useState(false);
-  const [globeInstance, setGlobeInstance] = useState(null);
+  const animationFrameRef = useRef(null);
+  const globeDataRef = useRef(data);
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    globeDataRef.current = data;
+  }, [data]);
 
+  // Initialize canvas drawing
   useEffect(() => {
-    if (!isClient || !globeContainerRef.current || !isVisible) return;
-
-    const loadGlobe = async () => {
-      try {
-        // Dynamically import the globe.gl library
-        const GlobeGL = (await import('globe.gl')).default;
-        
-        // Create routes data from sales data points
-        // We'll connect all points to a fictional headquarters location
-        const HQ = { lat: 37.7749, lng: -122.4194, name: 'HQ' }; // San Francisco
-        
-        const arcsData = data.map(point => ({
-          startLat: HQ.lat,
-          startLng: HQ.lng,
-          endLat: point.lat,
-          endLng: point.lng,
-          color: point.color,
-          value: point.value,
-          name: point.name
-        }));
-        
-        // Create the globe
-        const globe = GlobeGL()
-          .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-          .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-          .width(globeContainerRef.current.clientWidth)
-          .height(globeContainerRef.current.clientHeight)
-          .pointsData(data)
-          .pointColor(d => d.color)
-          .pointLabel(d => `${d.name}: $${(d.value / 1000000).toFixed(1)}M`)
-          .pointRadius(d => Math.sqrt(d.value) * 0.0001 + 0.5)
-          .pointAltitude(0.01)
-          .arcsData(arcsData)
-          .arcColor(d => d.color)
-          .arcStroke(d => Math.sqrt(d.value) * 0.0001 + 0.5)
-          .arcAltitude(d => Math.sqrt(d.value) * 0.00005 + 0.05)
-          .arcDashLength(0.4)
-          .arcDashGap(0.2)
-          .arcDashAnimateTime(2000)
-          .onPointHover(point => {
-            if (point) {
-              globe
-                .pointLabel(() => `${point.name}: $${(point.value / 1000000).toFixed(1)}M`)
-                .pointRadius(d => d === point ? Math.sqrt(d.value) * 0.0001 + 1 : Math.sqrt(d.value) * 0.0001 + 0.5);
-            } else {
-              globe
-                .pointLabel(d => `${d.name}: $${(d.value / 1000000).toFixed(1)}M`)
-                .pointRadius(d => Math.sqrt(d.value) * 0.0001 + 0.5);
-            }
-          })
-          .enablePointerInteraction(true);
-          
-        // Mount the globe to the DOM
-        globe(globeContainerRef.current);
-        
-        // Store instance for cleanup
-        setGlobeInstance(globe);
-        
-        // Add automatic rotation
-        let rotationAnimation;
-        let angle = 0;
-        const rotateGlobe = () => {
-          angle += 0.2;
-          globe.pointOfView({ lat: 0, lng: angle, altitude: 2.5 });
-          rotationAnimation = requestAnimationFrame(rotateGlobe);
-        };
-        
-        // Start rotation
-        rotateGlobe();
-        
-        // Handle resize
-        const handleResize = () => {
-          if (globeContainerRef.current) {
-            globe
-              .width(globeContainerRef.current.clientWidth)
-              .height(globeContainerRef.current.clientHeight);
-          }
-        };
-        
-        window.addEventListener('resize', handleResize);
-        
-        // Cleanup
-        return () => {
-          window.removeEventListener('resize', handleResize);
-          if (rotationAnimation) {
-            cancelAnimationFrame(rotationAnimation);
-          }
-          if (globe) {
-            globe._destructor();
-          }
-        };
-      } catch (error) {
-        console.error('Error loading Globe.gl:', error);
-        // Show error in the DOM for debugging
-        if (globeContainerRef.current) {
-          globeContainerRef.current.innerHTML = `
-            <div style="color: red; padding: 20px;">
-              <p>Error loading Globe.gl: ${error.message}</p>
-              <p>Make sure to install the required dependencies:</p>
-              <pre>npm install globe.gl three</pre>
-            </div>
-          `;
-        }
-      }
+    if (!isClient || !canvasRef.current || !isVisible) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas dimensions
+    const setCanvasDimensions = () => {
+      const container = canvas.parentElement;
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
     };
     
-    loadGlobe();
+    setCanvasDimensions();
     
-  }, [data, isClient, isVisible]);
+    // Globe parameters
+    const globeRadius = Math.min(canvas.width, canvas.height) * 0.35;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // Animation variables
+    let rotation = 0;
+    
+    // Draw the globe and data points
+    const drawGlobe = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw globe (blue sphere with gradient)
+      const gradient = ctx.createRadialGradient(
+        centerX - globeRadius * 0.3, 
+        centerY - globeRadius * 0.3, 
+        0,
+        centerX, 
+        centerY, 
+        globeRadius
+      );
+      gradient.addColorStop(0, 'rgba(96, 165, 250, 0.9)');
+      gradient.addColorStop(0.5, 'rgba(37, 99, 235, 0.8)');
+      gradient.addColorStop(1, 'rgba(30, 64, 175, 0.7)');
+      
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, globeRadius, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      
+      // Draw a subtle grid on the globe for 3D effect
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 0.5;
+      
+      // Draw longitude lines
+      for (let i = 0; i < 24; i++) {
+        const angle = (i / 24) * Math.PI * 2 + rotation;
+        ctx.beginPath();
+        ctx.ellipse(
+          centerX, 
+          centerY, 
+          globeRadius * Math.abs(Math.cos(angle)), 
+          globeRadius, 
+          0, 
+          0, 
+          Math.PI * 2
+        );
+        ctx.stroke();
+      }
+      
+      // Draw latitude lines
+      for (let i = 1; i < 6; i++) {
+        const size = globeRadius * (i / 6);
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, size, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+      
+      // Draw data points
+      globeDataRef.current.forEach(point => {
+        // Convert lat/lng to position on the circle (with rotation)
+        const lat = point.lat * (Math.PI / 180);
+        const lng = (point.lng + 180) * (Math.PI / 180) + rotation;
+        
+        // Calculate 3D position
+        const x = centerX + globeRadius * Math.cos(lat) * Math.cos(lng);
+        const y = centerY + globeRadius * Math.sin(lat);
+        const z = Math.cos(lat) * Math.sin(lng); // Used for sizing/opacity
+        
+        // Only draw points on the visible side of the globe
+        if (z < 0) {
+          // Calculate point size based on value
+          const normalizedValue = Math.max(0.5, Math.min(1.5, point.value / 5000000));
+          const pointSize = 5 * normalizedValue;
+          
+          // Draw glow
+          const gradient = ctx.createRadialGradient(x, y, 0, x, y, pointSize * 3);
+          gradient.addColorStop(0, point.color || 'rgba(255, 100, 50, 0.8)');
+          gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          
+          ctx.beginPath();
+          ctx.arc(x, y, pointSize * 3, 0, Math.PI * 2);
+          ctx.fillStyle = gradient;
+          ctx.fill();
+          
+          // Draw point
+          ctx.beginPath();
+          ctx.arc(x, y, pointSize, 0, Math.PI * 2);
+          ctx.fillStyle = point.color || '#ff6432';
+          ctx.fill();
+          
+          // Add pulsating effect
+          const pulseSize = pointSize * (1.2 + 0.3 * Math.sin(Date.now() * 0.003));
+          ctx.beginPath();
+          ctx.arc(x, y, pulseSize, 0, Math.PI * 2);
+          ctx.fillStyle = `${point.color || '#ff6432'}40`; // 40 = 25% opacity
+          ctx.fill();
+          
+          // Add city name label
+          if (point.name) {
+            ctx.fillStyle = '#fff';
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(point.name, x, y - pointSize - 8);
+            
+            // Add value below
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.font = '8px sans-serif';
+            ctx.fillText(`$${(point.value / 1000000).toFixed(1)}M`, x, y - pointSize - 0);
+          }
+        }
+      });
+      
+      // Update rotation
+      rotation += 0.005;
+      
+      // Request next frame
+      animationFrameRef.current = requestAnimationFrame(drawGlobe);
+    };
+    
+    // Start animation
+    drawGlobe();
+    
+    // Handle window resize
+    const handleResize = () => {
+      setCanvasDimensions();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isClient, isVisible]);
   
   if (!isVisible) return null;
   
@@ -131,24 +177,24 @@ const GlobeVisualization = ({ data, isVisible }) => {
     <Card className="h-full">
       <CardHeader className="pb-2">
         <div className="flex items-center">
-          <GlobeIcon className="h-5 w-5 mr-2" />
+          <Globe className="h-5 w-5 mr-2" />
           <CardTitle>Global Sales Distribution</CardTitle>
         </div>
         <CardDescription>
-          3D visualization of sales network
+          3D visualization of sales around the world
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="aspect-video bg-background rounded-md flex items-center justify-center relative">
           {!isClient ? (
             <div className="text-center text-muted-foreground">
-              <GlobeIcon className="h-12 w-12 mx-auto mb-2" />
+              <Globe className="h-12 w-12 mx-auto mb-2" />
               <p>Loading globe visualization...</p>
             </div>
           ) : (
-            <div 
-              ref={globeContainerRef} 
-              className="w-full h-full" 
+            <canvas 
+              ref={canvasRef} 
+              className="w-full h-full"
               style={{ width: '100%', height: '100%' }}
             />
           )}
