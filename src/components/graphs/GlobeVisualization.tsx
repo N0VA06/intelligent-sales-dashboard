@@ -1,263 +1,260 @@
-// import React, { useEffect, useRef, useState } from "react";
-// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Globe } from "lucide-react";
+import React, { useRef, useEffect, useState } from 'react';
+import * as THREE from 'three';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Globe } from 'lucide-react';
 
-// interface GlobeDataPoint {
-//   lat: number;
-//   lng: number;
-//   name: string;
-//   value: number;
-//   color?: string;
-//   connections?: string[]; // IDs of connected points
-// }
+// Globe Visualization Component using Three.js
+const GlobeVisualization = ({ data, isVisible }) => {
+  const globeRef = useRef(null);
+  const [isClient, setIsClient] = useState(false);
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
+  const rendererRef = useRef(null);
+  const globeMeshRef = useRef(null);
+  const pointsRef = useRef([]);
+  const frameRef = useRef(null);
 
-// interface GlobeArcData {
-//   startLat: number;
-//   startLng: number;
-//   endLat: number;
-//   endLng: number;
-//   color: string;
-// }
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-// interface GlobeVisualizationProps {
-//   className?: string;
-//   data: GlobeDataPoint[];
-// }
+  // Initialize Three.js scene
+  useEffect(() => {
+    if (!isClient || !globeRef.current || !isVisible) return;
+    
+    // Clean up previous instances if they exist
+    if (rendererRef.current) {
+      cancelAnimationFrame(frameRef.current);
+      rendererRef.current.dispose();
+      if (sceneRef.current) {
+        sceneRef.current.children.forEach(child => {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(material => material.dispose());
+            } else {
+              child.material.dispose();
+            }
+          }
+        });
+      }
+    }
 
-// const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({ className, data }) => {
-//   const globeEl = useRef<HTMLDivElement>(null);
-//   const [isClient, setIsClient] = useState(false);
-//   const [globeLoaded, setGlobeLoaded] = useState(false);
+    // Create scene
+    const scene = new THREE.Scene();
+    sceneRef.current = scene;
+
+    // Create camera
+    const camera = new THREE.PerspectiveCamera(
+      45, 
+      globeRef.current.clientWidth / globeRef.current.clientHeight, 
+      0.1, 
+      1000
+    );
+    camera.position.z = 4;
+    cameraRef.current = camera;
+
+    // Create renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(globeRef.current.clientWidth, globeRef.current.clientHeight);
+    renderer.setClearColor(0x000000, 0);
+    globeRef.current.innerHTML = '';
+    globeRef.current.appendChild(renderer.domElement);
+    rendererRef.current = renderer;
+
+    // Create ambient light
+    const ambientLight = new THREE.AmbientLight(0x404040, 1.5);
+    scene.add(ambientLight);
+
+    // Create directional light
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(1, 1, 1);
+    scene.add(directionalLight);
+
+    // Load Earth texture
+    const textureLoader = new THREE.TextureLoader();
+    
+    // Earth sphere
+    const earthGeometry = new THREE.SphereGeometry(1, 32, 32);
+    
+    // Create a basic material with blue color first
+    const earthMaterial = new THREE.MeshPhongMaterial({
+      color: 0x1e40af,
+      shininess: 15,
+      transparent: true,
+      opacity: 0.8
+    });
+    
+    // Create Earth mesh
+    const earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
+    scene.add(earthMesh);
+    globeMeshRef.current = earthMesh;
+    
+    // Try to load texture asynchronously
+    textureLoader.load(
+      // URL can be replaced with a public Earth texture
+      'https://unpkg.com/three-globe@2.24.10/example/img/earth-blue-marble.jpg',
+      (texture) => {
+        earthMaterial.map = texture;
+        earthMaterial.needsUpdate = true;
+      },
+      undefined,
+      (err) => {
+        console.error('Error loading texture', err);
+        // Continue with basic blue material if texture fails
+      }
+    );
+
+    // Add data points
+    const pointsGroup = new THREE.Group();
+    scene.add(pointsGroup);
+    
+    // Add markers for each data point
+    data.forEach(point => {
+      // Convert lat/lng to 3D position
+      const phi = (90 - point.lat) * (Math.PI / 180);
+      const theta = (point.lng + 180) * (Math.PI / 180);
+      
+      const x = -1 * Math.sin(phi) * Math.cos(theta);
+      const y = Math.cos(phi);
+      const z = Math.sin(phi) * Math.sin(theta);
+      
+      // Create marker
+      const pointGeometry = new THREE.SphereGeometry(0.02, 16, 16);
+      const pointMaterial = new THREE.MeshBasicMaterial({ 
+        color: new THREE.Color(point.color || '#ff6432')
+      });
+      const pointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
+      
+      // Position marker
+      pointMesh.position.set(x, y, z);
+      pointsGroup.add(pointMesh);
+      
+      // Add glow effect with larger transparent sphere
+      const glowGeometry = new THREE.SphereGeometry(0.04, 16, 16);
+      const glowMaterial = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(point.color || '#ff6432'),
+        transparent: true,
+        opacity: 0.3
+      });
+      const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+      glowMesh.position.set(x, y, z);
+      pointsGroup.add(glowMesh);
+      
+      // Store reference to point for animations
+      pointsRef.current.push({
+        point: pointMesh,
+        glow: glowMesh,
+        initialPosition: { x, y, z },
+        data: point
+      });
+    });
+
+    // Animation function
+    const animate = () => {
+      frameRef.current = requestAnimationFrame(animate);
+      
+      // Rotate the globe
+      if (globeMeshRef.current) {
+        globeMeshRef.current.rotation.y += 0.001;
+        pointsGroup.rotation.y += 0.001;
+      }
+      
+      // Pulsate points
+      pointsRef.current.forEach(pointObj => {
+        const { glow } = pointObj;
+        glow.scale.x = 1 + 0.2 * Math.sin(Date.now() * 0.003);
+        glow.scale.y = 1 + 0.2 * Math.sin(Date.now() * 0.003);
+        glow.scale.z = 1 + 0.2 * Math.sin(Date.now() * 0.003);
+      });
+      
+      renderer.render(scene, camera);
+    };
+    
+    // Start animation
+    animate();
+    
+    // Resize handler
+    const handleResize = () => {
+      if (!globeRef.current) return;
+      
+      camera.aspect = globeRef.current.clientWidth / globeRef.current.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(globeRef.current.clientWidth, globeRef.current.clientHeight);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Clean up function
+    return () => {
+      cancelAnimationFrame(frameRef.current);
+      window.removeEventListener('resize', handleResize);
+      
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
+      
+      if (globeRef.current && globeRef.current.contains(renderer.domElement)) {
+        globeRef.current.removeChild(renderer.domElement);
+      }
+      
+      // Clean up geometries and materials
+      if (sceneRef.current) {
+        sceneRef.current.children.forEach(child => {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(material => material.dispose());
+            } else {
+              child.material.dispose();
+            }
+          }
+        });
+      }
+    };
+  }, [data, isClient, isVisible]);
   
-//   useEffect(() => {
-//     setIsClient(true);
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (cameraRef.current && rendererRef.current && globeRef.current) {
+        cameraRef.current.aspect = globeRef.current.clientWidth / globeRef.current.clientHeight;
+        cameraRef.current.updateProjectionMatrix();
+        rendererRef.current.setSize(globeRef.current.clientWidth, globeRef.current.clientHeight);
+      }
+    };
     
-//     // We'll dynamically load Globe.gl
-//     const loadGlobe = async () => {
-//       try {
-//         setGlobeLoaded(true);
-//       } catch (error) {
-//         console.error("Failed to load Globe.gl:", error);
-//       }
-//     };
-    
-//     loadGlobe();
-//   }, []);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
-//   useEffect(() => {
-//     if (!isClient || !globeEl.current || !globeLoaded) return;
-    
-//     const initGlobe = async () => {
-//       try {
-//         // Using dynamic import for Globe.gl with explicit path
-//         const GlobeGL = (await import('globe.gl')).default;
-        
-//         // Clear previous globe instances
-//         globeEl.current.innerHTML = '';
-        
-//         // Generate arcs data based on connections between points
-//         const arcsData: GlobeArcData[] = [];
-//         const pointsMap = new Map(data.map(point => [point.name, point]));
-        
-//         // Create connections between related points
-//         data.forEach(source => {
-//           if (source.connections) {
-//             source.connections.forEach(targetName => {
-//               const target = pointsMap.get(targetName);
-//               if (target) {
-//                 arcsData.push({
-//                   startLat: source.lat,
-//                   startLng: source.lng,
-//                   endLat: target.lat,
-//                   endLng: target.lng,
-//                   color: source.color || '#ffaa00'
-//                 });
-//               }
-//             });
-//           }
-//         });
-        
-//         // If no explicit connections provided, connect major cities
-//         if (arcsData.length === 0 && data.length > 1) {
-//           // Connect top sales cities
-//           const sortedByValue = [...data].sort((a, b) => b.value - a.value);
-//           const topCities = sortedByValue.slice(0, Math.min(5, sortedByValue.length));
-          
-//           topCities.forEach((source, i) => {
-//             for (let j = i + 1; j < topCities.length; j++) {
-//               const target = topCities[j];
-//               arcsData.push({
-//                 startLat: source.lat,
-//                 startLng: source.lng,
-//                 endLat: target.lat,
-//                 endLng: target.lng,
-//                 color: source.color || '#ffaa00'
-//               });
-//             }
-//           });
-          
-//           // Connect major regional hubs
-//           const regionGroups: { [key: string]: GlobeDataPoint[] } = {
-//             'Americas': data.filter(p => p.lng < -30),
-//             'Europe/Africa': data.filter(p => p.lng >= -30 && p.lng <= 60),
-//             'Asia/Pacific': data.filter(p => p.lng > 60)
-//           };
-          
-//           Object.values(regionGroups).forEach(group => {
-//             if (group.length > 1) {
-//               // Find the city with highest sales in this region
-//               const hub = [...group].sort((a, b) => b.value - a.value)[0];
-//               // Connect it to other major cities in the region
-//               group.slice(1, 4).forEach(city => {
-//                 arcsData.push({
-//                   startLat: hub.lat,
-//                   startLng: hub.lng,
-//                   endLat: city.lat,
-//                   endLng: city.lng,
-//                   color: hub.color || '#ffaa00'
-//                 });
-//               });
-//             }
-//           });
-//         }
-        
-//         // Create new instance with 'new' keyword
-//         const globe = new GlobeGL()
-//           .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-//           .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-//           // Configure points (cities)
-//           .pointsData(data)
-//           .pointLat((d: GlobeDataPoint) => d.lat)
-//           .pointLng((d: GlobeDataPoint) => d.lng)
-//           .pointColor((d: GlobeDataPoint) => d.color || 'rgba(255, 100, 50, 0.8)')
-//           .pointRadius((d: GlobeDataPoint) => Math.sqrt(d.value) * 0.08)
-//           .pointAltitude(0.01)
-//           .pointLabel((d: GlobeDataPoint) => `${d.name}: $${d.value.toLocaleString()}`)
-//           // Configure arcs (connections)
-//           .arcsData(arcsData)
-//           .arcStartLat((d: GlobeArcData) => d.startLat)
-//           .arcStartLng((d: GlobeArcData) => d.startLng)
-//           .arcEndLat((d: GlobeArcData) => d.endLat)
-//           .arcEndLng((d: GlobeArcData) => d.endLng)
-//           .arcColor((d: GlobeArcData) => d.color)
-//           .arcDashLength(0.4)
-//           .arcDashGap(0.2)
-//           .arcDashAnimateTime(2000)
-//           .arcsTransitionDuration(1000)
-//           .arcStroke(0.5)
-//           // Add custom point glow effect
-//           .pointsMerge(true)
-//           // Interactive features
-//           .onPointHover((point: GlobeDataPoint | null) => {
-//             document.body.style.cursor = point ? 'pointer' : 'default';
-//           });
-          
-//         // Mount to DOM
-//         globe(globeEl.current);
-        
-//         // Auto-rotate
-//         globe.controls().autoRotate = true;
-//         globe.controls().autoRotateSpeed = 0.5;
-        
-//         // Set initial position (view Americas)
-//         globe.pointOfView({ lat: 39.6, lng: -98.5, altitude: 2.5 });
-        
-//         // Handle window resize
-//         const handleResize = () => {
-//           if (globeEl.current) {
-//             const { width, height } = globeEl.current.getBoundingClientRect();
-//             globe.width(width);
-//             globe.height(height);
-//           }
-//         };
-        
-//         window.addEventListener('resize', handleResize);
-//         handleResize();
-        
-//         return () => {
-//           window.removeEventListener('resize', handleResize);
-//           if (globe && typeof globe._destructor === 'function') {
-//             globe._destructor();
-//           }
-//         };
-//       } catch (error) {
-//         console.error("Error initializing globe:", error);
-        
-//         // Fallback visualization if Globe.gl fails to load
-//         if (globeEl.current) {
-//           globeEl.current.innerHTML = '';
-//           const fallbackEl = document.createElement('div');
-//           fallbackEl.className = 'w-full h-full flex flex-col items-center justify-center';
-          
-//           const globeCircle = document.createElement('div');
-//           globeCircle.className = 'w-64 h-64 rounded-full relative';
-//           globeCircle.style.background = 'radial-gradient(circle at 30% 30%, #60a5fa, #1e40af)';
-//           globeCircle.style.boxShadow = '0 0 40px rgba(59, 130, 246, 0.5)';
-          
-//           // Add points to simulate cities
-//           data.forEach(point => {
-//             const pointEl = document.createElement('div');
-//             pointEl.className = 'absolute w-3 h-3 rounded-full';
-//             pointEl.style.backgroundColor = point.color || '#ffaa00';
-            
-//             // Convert lat/lng to position on the globe circle
-//             const phi = (90 - point.lat) * (Math.PI / 180);
-//             const theta = (point.lng + 180) * (Math.PI / 180);
-//             const x = -1 * Math.sin(phi) * Math.cos(theta);
-//             const y = Math.cos(phi);
-//             const scale = 100;
-            
-//             pointEl.style.left = `${50 + x * scale}%`;
-//             pointEl.style.top = `${50 - y * scale}%`;
-//             pointEl.style.transform = 'translate(-50%, -50%)';
-            
-//             // Add pulse animation
-//             const pulse = document.createElement('div');
-//             pulse.className = 'absolute inset-0 rounded-full animate-ping';
-//             pulse.style.backgroundColor = point.color || '#ffaa00';
-//             pulse.style.opacity = '0.6';
-//             pointEl.appendChild(pulse);
-            
-//             // Add tooltip
-//             pointEl.title = `${point.name}: $${point.value.toLocaleString()}`;
-            
-//             globeCircle.appendChild(pointEl);
-//           });
-          
-//           fallbackEl.appendChild(globeCircle);
-//           globeEl.current.appendChild(fallbackEl);
-//         }
-//       }
-//     };
-    
-//     initGlobe();
-//   }, [data, isClient, globeLoaded]);
+  if (!isVisible) return null;
   
-//   return (
-//     <Card className={`${className || ''} dashboard-card h-full`}>
-//       <CardHeader className="pb-2">
-//         <div className="flex items-center">
-//           <Globe className="h-5 w-5 mr-2" />
-//           <CardTitle>Global Sales Distribution</CardTitle>
-//         </div>
-//         <CardDescription>
-//           Visualization of sales around the world
-//         </CardDescription>
-//       </CardHeader>
-//       <CardContent className="p-0 md:p-6">
-//         <div className="aspect-video md:aspect-square w-full h-full bg-background rounded-md flex items-center justify-center relative">
-//           {!isClient ? (
-//             <div className="text-center text-muted-foreground">
-//               <Globe className="h-16 w-16 mx-auto mb-2 animate-pulse" />
-//               <p>Loading globe visualization...</p>
-//             </div>
-//           ) : (
-//             <div ref={globeEl} className="w-full h-full" />
-//           )}
-//         </div>
-//       </CardContent>
-//     </Card>
-//   );
-// };
+  return (
+    <Card className="h-full">
+      <CardHeader className="pb-2">
+        <div className="flex items-center">
+          <Globe className="h-5 w-5 mr-2" />
+          <CardTitle>Global Sales Distribution</CardTitle>
+        </div>
+        <CardDescription>
+          3D visualization of sales around the world
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="aspect-video bg-background rounded-md flex items-center justify-center relative">
+          {!isClient ? (
+            <div className="text-center text-muted-foreground">
+              <Globe className="h-12 w-12 mx-auto mb-2" />
+              <p>Loading globe visualization...</p>
+            </div>
+          ) : (
+            <div ref={globeRef} className="w-full h-full" />
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
-// export default GlobeVisualization;
+export default GlobeVisualization;
