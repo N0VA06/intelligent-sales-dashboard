@@ -344,7 +344,7 @@ const SalesKnowledgeGraph = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showGlobe, setShowGlobe] = useState(false);
+  const [showGlobe, setShowGlobe] = useState(true);
 
   // Add node movement animation
   useEffect(() => {
@@ -400,7 +400,7 @@ const SalesKnowledgeGraph = () => {
 
   return (
     <div className="w-full h-full grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div className={`knowledge-graph ${showGlobe ? 'md:col-span-2' : 'md:col-span-3'} h-96 md:h-full`}>
+      <div className="knowledge-graph md:col-span-2 h-96 md:h-full">
         <ReactFlow
           nodes={filteredNodes}
           edges={filteredEdges}
@@ -468,10 +468,6 @@ const SalesKnowledgeGraph = () => {
           </Panel>
           <Panel position="top-right">
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={toggleGlobe} className="flex items-center gap-1">
-                <Globe className="w-4 h-4" />
-                <span className="text-xs">{showGlobe ? 'Hide Globe' : 'Show Globe'}</span>
-              </Button>
               <Button size="sm" variant="outline" onClick={resetLayout} className="flex items-center gap-1">
                 <RotateCw className="w-4 h-4" />
                 <span className="text-xs">Reset</span>
@@ -481,11 +477,9 @@ const SalesKnowledgeGraph = () => {
         </ReactFlow>
       </div>
       
-      {showGlobe && (
-        <div className="md:col-span-1 h-96 md:h-full">
-          <GlobeVisualization data={globeData} isVisible={showGlobe} />
-        </div>
-      )}
+      <div className="md:col-span-1 h-96 md:h-full">
+        <GlobeVisualization data={globeData} isVisible={true} />
+      </div>
     </div>
   );
 };
