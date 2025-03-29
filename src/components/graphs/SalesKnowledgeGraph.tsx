@@ -22,7 +22,7 @@ import { KnowledgeGraphNode, KnowledgeGraphEdge } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Search, ZoomIn, ZoomOut, RotateCw, Globe } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import GlobeVisualization from './GlobeVisualization'; // Import our new 3D globe component
 
 // Node data
 interface CustomNodeData {
@@ -176,128 +176,6 @@ const CustomEdge = ({
         </text>
       )}
     </>
-  );
-};
-
-// Globe Visualization Component
-const GlobeVisualization = ({ data, isVisible }) => {
-  const globeEl = useRef(null);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient || !globeEl.current || !isVisible) return;
-
-    // We're simulating the GlobeGL functionality since we can't import it directly
-    const globeContainer = globeEl.current;
-    globeContainer.innerHTML = '';
-    
-    // Create a placeholder for the globe
-    const globePlaceholder = document.createElement('div');
-    globePlaceholder.className = 'w-full h-full flex items-center justify-center bg-gray-100 rounded-lg relative overflow-hidden';
-    
-    // Add a circular element to represent the globe
-    const globeCircle = document.createElement('div');
-    globeCircle.className = 'w-40 h-40 rounded-full bg-blue-300 relative animate-pulse';
-    globeCircle.style.background = 'radial-gradient(circle at 30% 30%, #60a5fa, #1e40af)';
-    
-    // Add points to simulate the data points
-    data.forEach(point => {
-      const pointEl = document.createElement('div');
-      pointEl.className = 'absolute w-2 h-2 rounded-full';
-      pointEl.style.backgroundColor = point.color || 'rgba(255, 100, 50, 0.8)';
-      
-      // Convert lat/lng to position on the circle (simplified)
-      const angle = (point.lng + 180) * (Math.PI / 180);
-      const radius = 70 * (1 - Math.abs(point.lat) / 90);
-      const x = 20 + radius * Math.cos(angle);
-      const y = 20 + radius * Math.sin(angle);
-      
-      pointEl.style.left = `calc(50% + ${x}px)`;
-      pointEl.style.top = `calc(50% + ${y}px)`;
-      pointEl.style.transform = 'translate(-50%, -50%)';
-      
-      // Add pulse animation for the point
-      const pulseAnimation = document.createElement('div');
-      pulseAnimation.className = 'absolute w-4 h-4 rounded-full animate-ping';
-      pulseAnimation.style.backgroundColor = point.color || 'rgba(255, 100, 50, 0.4)';
-      pulseAnimation.style.opacity = '0.6';
-      
-      pointEl.appendChild(pulseAnimation);
-      globeCircle.appendChild(pointEl);
-      
-      // Add tooltip on hover
-      pointEl.addEventListener('mouseenter', () => {
-        const tooltip = document.createElement('div');
-        tooltip.className = 'absolute z-10 bg-black text-white text-xs p-1 rounded';
-        tooltip.style.left = `calc(50% + ${x}px)`;
-        tooltip.style.top = `calc(50% + ${y - 20}px)`;
-        tooltip.style.transform = 'translate(-50%, -100%)';
-        tooltip.textContent = `${point.name}: $${point.value.toLocaleString()}`;
-        globePlaceholder.appendChild(tooltip);
-        
-        pointEl.addEventListener('mouseleave', () => {
-          tooltip.remove();
-        });
-      });
-    });
-    
-    // Add continents outlines (simplified)
-    const continentsOverlay = document.createElement('div');
-    continentsOverlay.className = 'absolute inset-0 opacity-30';
-    continentsOverlay.style.backgroundImage = 'url(\'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/BlankMap-World.svg/1280px-BlankMap-World.svg.png\')';
-    continentsOverlay.style.backgroundSize = 'cover';
-    continentsOverlay.style.backgroundPosition = 'center';
-    continentsOverlay.style.mixBlendMode = 'overlay';
-    
-    globeCircle.appendChild(continentsOverlay);
-    globePlaceholder.appendChild(globeCircle);
-    globeContainer.appendChild(globePlaceholder);
-    
-    // Add rotation animation
-    let rotation = 0;
-    const rotateGlobe = () => {
-      rotation += 0.2;
-      continentsOverlay.style.backgroundPosition = `${rotation % 360}px center`;
-      requestAnimationFrame(rotateGlobe);
-    };
-    
-    rotateGlobe();
-    
-    return () => {
-      // Cleanup if necessary
-    };
-  }, [data, isClient, isVisible]);
-  
-  if (!isVisible) return null;
-  
-  return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center">
-          <Globe className="h-5 w-5 mr-2" />
-          <CardTitle>Global Sales Distribution</CardTitle>
-        </div>
-        <CardDescription>
-          Visualization of sales around the world
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="aspect-video bg-background rounded-md flex items-center justify-center relative">
-          {!isClient ? (
-            <div className="text-center text-muted-foreground">
-              <Globe className="h-12 w-12 mx-auto mb-2" />
-              <p>Loading globe visualization...</p>
-            </div>
-          ) : (
-            <div ref={globeEl} className="w-full h-full" />
-          )}
-        </div>
-      </CardContent>
-    </Card>
   );
 };
 
@@ -472,13 +350,17 @@ const SalesKnowledgeGraph = () => {
                 <RotateCw className="w-4 h-4" />
                 <span className="text-xs">Reset</span>
               </Button>
+              <Button size="sm" variant="outline" onClick={toggleGlobe} className="flex items-center gap-1">
+                <Globe className="w-4 h-4" />
+                <span className="text-xs">{showGlobe ? 'Hide Globe' : 'Show Globe'}</span>
+              </Button>
             </div>
           </Panel>
         </ReactFlow>
       </div>
       
       <div className="md:col-span-1 h-96 md:h-full">
-        <GlobeVisualization data={globeData} isVisible={true} />
+        {showGlobe && <GlobeVisualization data={globeData} isVisible={showGlobe} />}
       </div>
     </div>
   );
