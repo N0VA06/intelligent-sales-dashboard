@@ -447,8 +447,8 @@ const nodeTypes = {
   channel: (props: any) => <CustomNode {...props} type="channel" />,
 };
 
-// SalesKnowledgeGraph Component
-const SalesKnowledgeGraph = () => {
+// Knowledge Graph Components using ReactFlow
+const SalesKnowledgeGraphVisual = () => {
   // Map our custom nodes to ReactFlow nodes
   const initialNodes: Node[] = knowledgeGraphNodes.map((node: any) => ({
     id: node.id,
@@ -630,7 +630,7 @@ const SalesKnowledgeGraph = () => {
               <CardDescription>Visualizing relationships between products, customers, regions, and sales channels</CardDescription>
             </CardHeader>
             <CardContent className="p-4">
-              <SalesKnowledgeGraph />
+              <SalesKnowledgeGraphVisual />
             </CardContent>
           </Card>
         </TabsContent>
