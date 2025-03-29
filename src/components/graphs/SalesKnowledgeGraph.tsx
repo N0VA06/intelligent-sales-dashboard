@@ -5,25 +5,429 @@ import ReactFlow, {
   MiniMap,
   Node,
   Edge,
-  NodeChange,
-  EdgeChange,
   Connection,
   addEdge,
-  applyNodeChanges,
-  applyEdgeChanges,
   useNodesState,
   useEdgesState,
   ConnectionLineType,
   Panel
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { knowledgeGraphNodes, knowledgeGraphEdges } from '@/data/mockData';
-import { KnowledgeGraphNode, KnowledgeGraphEdge } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, ZoomIn, ZoomOut, RotateCw, Globe } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Search, RotateCw, Globe } from 'lucide-react';
 
+// ======= MOCK DATA =======
+// Knowledge Graph Nodes
+const knowledgeGraphNodes = [
+  {
+    id: 'product1',
+    type: 'product',
+    position: { x: 250, y: 50 },
+    data: { label: 'Product A', value: 1250000, category: 'Electronics' }
+  },
+  {
+    id: 'product2',
+    type: 'product',
+    position: { x: 100, y: 200 },
+    data: { label: 'Product B', value: 850000, category: 'Software' }
+  },
+  {
+    id: 'product3',
+    type: 'product',
+    position: { x: 400, y: 200 },
+    data: { label: 'Product C', value: 650000, category: 'Services' }
+  },
+  {
+    id: 'customer1',
+    type: 'customer',
+    position: { x: 250, y: 350 },
+    data: { label: 'Enterprise', value: 2100000, details: '43 accounts' }
+  },
+  {
+    id: 'customer2',
+    type: 'customer',
+    position: { x: 550, y: 350 },
+    data: { label: 'SMB', value: 650000, details: '128 accounts' }
+  },
+  {
+    id: 'region1',
+    type: 'region',
+    position: { x: 100, y: 500 },
+    data: { label: 'North America', value: 1450000 }
+  },
+  {
+    id: 'region2',
+    type: 'region',
+    position: { x: 300, y: 500 },
+    data: { label: 'EMEA', value: 950000 }
+  },
+  {
+    id: 'region3',
+    type: 'region',
+    position: { x: 500, y: 500 },
+    data: { label: 'APAC', value: 350000 }
+  },
+  {
+    id: 'channel1',
+    type: 'channel',
+    position: { x: 200, y: 650 },
+    data: { label: 'Direct', value: 1750000 }
+  },
+  {
+    id: 'channel2',
+    type: 'channel',
+    position: { x: 400, y: 650 },
+    data: { label: 'Partner', value: 1000000 }
+  }
+];
+
+// Knowledge Graph Edges
+const knowledgeGraphEdges = [
+  {
+    id: 'e1-2',
+    source: 'product1',
+    target: 'customer1',
+    type: 'custom',
+    data: { type: 'sales', value: 950000 }
+  },
+  {
+    id: 'e1-3',
+    source: 'product1',
+    target: 'customer2',
+    type: 'custom',
+    data: { type: 'sales', value: 300000 }
+  },
+  {
+    id: 'e2-2',
+    source: 'product2',
+    target: 'customer1',
+    type: 'custom',
+    data: { type: 'sales', value: 650000 }
+  },
+  {
+    id: 'e2-3',
+    source: 'product2',
+    target: 'customer2',
+    type: 'custom',
+    data: { type: 'sales', value: 200000 }
+  },
+  {
+    id: 'e3-2',
+    source: 'product3',
+    target: 'customer1',
+    type: 'custom',
+    data: { type: 'sales', value: 500000 }
+  },
+  {
+    id: 'e3-3',
+    source: 'product3',
+    target: 'customer2',
+    type: 'custom',
+    data: { type: 'sales', value: 150000 }
+  },
+  {
+    id: 'e4-5',
+    source: 'customer1',
+    target: 'region1',
+    type: 'custom',
+    data: { type: 'customer_channel', value: 900000 }
+  },
+  {
+    id: 'e4-6',
+    source: 'customer1',
+    target: 'region2',
+    type: 'custom',
+    data: { type: 'customer_channel', value: 850000 }
+  },
+  {
+    id: 'e4-7',
+    source: 'customer1',
+    target: 'region3',
+    type: 'custom',
+    data: { type: 'customer_channel', value: 350000 }
+  },
+  {
+    id: 'e5-5',
+    source: 'customer2',
+    target: 'region1',
+    type: 'custom',
+    data: { type: 'customer_channel', value: 550000 }
+  },
+  {
+    id: 'e5-6',
+    source: 'customer2',
+    target: 'region2',
+    type: 'custom',
+    data: { type: 'customer_channel', value: 100000 }
+  },
+  {
+    id: 'e8-9',
+    source: 'region1',
+    target: 'channel1',
+    type: 'custom',
+    data: { type: 'channel_sales', value: 950000 }
+  },
+  {
+    id: 'e8-10',
+    source: 'region1',
+    target: 'channel2',
+    type: 'custom',
+    data: { type: 'channel_sales', value: 500000 }
+  },
+  {
+    id: 'e9-9',
+    source: 'region2',
+    target: 'channel1',
+    type: 'custom',
+    data: { type: 'channel_sales', value: 600000 }
+  },
+  {
+    id: 'e9-10',
+    source: 'region2',
+    target: 'channel2',
+    type: 'custom',
+    data: { type: 'channel_sales', value: 350000 }
+  },
+  {
+    id: 'e10-9',
+    source: 'region3',
+    target: 'channel1',
+    type: 'custom',
+    data: { type: 'channel_sales', value: 200000 }
+  },
+  {
+    id: 'e10-10',
+    source: 'region3',
+    target: 'channel2',
+    type: 'custom',
+    data: { type: 'channel_sales', value: 150000 }
+  }
+];
+
+// Globe Visualization Data
+const globeData = [
+  { lat: 40.7128, lng: -74.0060, name: 'New York', value: 950000, color: '#3b82f6', connections: ['London', 'Paris'] },
+  { lat: 34.0522, lng: -118.2437, name: 'Los Angeles', value: 500000, color: '#3b82f6', connections: ['Tokyo', 'Sydney'] },
+  { lat: 51.5074, lng: -0.1278, name: 'London', value: 650000, color: '#f59e0b', connections: ['Paris', 'Hong Kong'] },
+  { lat: 48.8566, lng: 2.3522, name: 'Paris', value: 350000, color: '#f59e0b', connections: ['London'] },
+  { lat: 35.6762, lng: 139.6503, name: 'Tokyo', value: 450000, color: '#10b981', connections: ['Hong Kong', 'Sydney'] },
+  { lat: 22.3193, lng: 114.1694, name: 'Hong Kong', value: 300000, color: '#10b981', connections: ['Tokyo', 'Sydney'] },
+  { lat: -33.8688, lng: 151.2093, name: 'Sydney', value: 250000, color: '#8b5cf6', connections: ['Hong Kong'] },
+  { lat: 19.4326, lng: -99.1332, name: 'Mexico City', value: 200000, color: '#8b5cf6', connections: ['Los Angeles', 'São Paulo'] },
+  { lat: -23.5505, lng: -46.6333, name: 'São Paulo', value: 300000, color: '#8b5cf6', connections: ['Mexico City'] },
+  { lat: 37.7749, lng: -122.4194, name: 'San Francisco', value: 750000, color: '#3b82f6', connections: ['New York', 'Tokyo'] },
+  { lat: 25.276987, lng: 55.296249, name: 'Dubai', value: 400000, color: '#f59e0b', connections: ['London', 'Hong Kong'] },
+  { lat: 52.520008, lng: 13.404954, name: 'Berlin', value: 350000, color: '#f59e0b', connections: ['London', 'Paris'] },
+];
+
+// ======= GLOBE VISUALIZATION COMPONENT =======
+interface GlobeDataPoint {
+  lat: number;
+  lng: number;
+  name: string;
+  value: number;
+  color?: string;
+  connections?: string[];
+}
+
+interface GlobeVisualizationProps {
+  className?: string;
+  data: GlobeDataPoint[];
+}
+
+const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({ className, data }) => {
+  const globeEl = useRef<HTMLDivElement>(null);
+  const [isClient, setIsClient] = useState(false);
+  const [globeLoaded, setGlobeLoaded] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+    
+    // Dynamically load Globe.gl
+    const loadGlobe = async () => {
+      try {
+        setGlobeLoaded(true);
+      } catch (error) {
+        console.error("Failed to load Globe.gl:", error);
+      }
+    };
+    
+    loadGlobe();
+  }, []);
+  
+  useEffect(() => {
+    if (!isClient || !globeEl.current || !globeLoaded) return;
+    
+    const initGlobe = async () => {
+      try {
+        // Using dynamic import for Globe.gl
+        const GlobeGL = (await import('globe.gl')).default;
+        
+        // Clear previous globe instances
+        globeEl.current.innerHTML = '';
+        
+        // Generate arcs data based on connections between points
+        const arcsData = [];
+        const pointsMap = new Map(data.map(point => [point.name, point]));
+        
+        // Create connections between related points
+        data.forEach(source => {
+          if (source.connections) {
+            source.connections.forEach(targetName => {
+              const target = pointsMap.get(targetName);
+              if (target) {
+                arcsData.push({
+                  startLat: source.lat,
+                  startLng: source.lng,
+                  endLat: target.lat,
+                  endLng: target.lng,
+                  color: source.color || '#ffaa00'
+                });
+              }
+            });
+          }
+        });
+        
+        // Create globe instance
+        const globe = new GlobeGL()
+          .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+          .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+          // Configure points (cities)
+          .pointsData(data)
+          .pointLat(d => d.lat)
+          .pointLng(d => d.lng)
+          .pointColor(d => d.color || 'rgba(255, 100, 50, 0.8)')
+          .pointRadius(d => Math.sqrt(d.value) * 0.08)
+          .pointAltitude(0.01)
+          .pointLabel(d => `${d.name}: $${d.value.toLocaleString()}`)
+          // Configure arcs (connections)
+          .arcsData(arcsData)
+          .arcStartLat(d => d.startLat)
+          .arcStartLng(d => d.startLng)
+          .arcEndLat(d => d.endLat)
+          .arcEndLng(d => d.endLng)
+          .arcColor(d => d.color)
+          .arcDashLength(0.4)
+          .arcDashGap(0.2)
+          .arcDashAnimateTime(2000)
+          .arcsTransitionDuration(1000)
+          .arcStroke(0.5)
+          // Interactive features
+          .onPointHover(point => {
+            document.body.style.cursor = point ? 'pointer' : 'default';
+          });
+          
+        // Mount to DOM
+        globe(globeEl.current);
+        
+        // Auto-rotate
+        globe.controls().autoRotate = true;
+        globe.controls().autoRotateSpeed = 0.5;
+        
+        // Set initial position
+        globe.pointOfView({ lat: 39.6, lng: -98.5, altitude: 2.5 });
+        
+        // Handle window resize
+        const handleResize = () => {
+          if (globeEl.current) {
+            const { width, height } = globeEl.current.getBoundingClientRect();
+            globe.width(width);
+            globe.height(height);
+          }
+        };
+        
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        
+        return () => {
+          window.removeEventListener('resize', handleResize);
+          if (globe && typeof globe._destructor === 'function') {
+            globe._destructor();
+          }
+        };
+      } catch (error) {
+        console.error("Error initializing globe:", error);
+        
+        // Fallback visualization if Globe.gl fails to load
+        if (globeEl.current) {
+          globeEl.current.innerHTML = '';
+          const fallbackEl = document.createElement('div');
+          fallbackEl.className = 'w-full h-full flex flex-col items-center justify-center';
+          
+          const globeCircle = document.createElement('div');
+          globeCircle.className = 'w-64 h-64 rounded-full relative';
+          globeCircle.style.background = 'radial-gradient(circle at 30% 30%, #60a5fa, #1e40af)';
+          globeCircle.style.boxShadow = '0 0 40px rgba(59, 130, 246, 0.5)';
+          
+          // Add points to simulate cities
+          data.forEach(point => {
+            const pointEl = document.createElement('div');
+            pointEl.className = 'absolute w-3 h-3 rounded-full';
+            pointEl.style.backgroundColor = point.color || '#ffaa00';
+            
+            // Convert lat/lng to position on the globe circle
+            const phi = (90 - point.lat) * (Math.PI / 180);
+            const theta = (point.lng + 180) * (Math.PI / 180);
+            const x = -1 * Math.sin(phi) * Math.cos(theta);
+            const y = Math.cos(phi);
+            const scale = 100;
+            
+            pointEl.style.left = `${50 + x * scale}%`;
+            pointEl.style.top = `${50 - y * scale}%`;
+            pointEl.style.transform = 'translate(-50%, -50%)';
+            
+            // Add pulse animation
+            const pulse = document.createElement('div');
+            pulse.className = 'absolute inset-0 rounded-full animate-ping';
+            pulse.style.backgroundColor = point.color || '#ffaa00';
+            pulse.style.opacity = '0.6';
+            pointEl.appendChild(pulse);
+            
+            // Add tooltip
+            pointEl.title = `${point.name}: $${point.value.toLocaleString()}`;
+            
+            globeCircle.appendChild(pointEl);
+          });
+          
+          fallbackEl.appendChild(globeCircle);
+          globeEl.current.appendChild(fallbackEl);
+        }
+      }
+    };
+    
+    initGlobe();
+  }, [data, isClient, globeLoaded]);
+  
+  return (
+    <Card className={`${className || ''} dashboard-card h-full`}>
+      <CardHeader className="pb-2">
+        <div className="flex items-center">
+          <Globe className="h-5 w-5 mr-2" />
+          <CardTitle>Global Sales Distribution</CardTitle>
+        </div>
+        <CardDescription>
+          Visualization of sales around the world
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-0 md:p-6">
+        <div className="aspect-video md:aspect-square w-full h-full bg-background rounded-md flex items-center justify-center relative">
+          {!isClient ? (
+            <div className="text-center text-muted-foreground">
+              <Globe className="h-16 w-16 mx-auto mb-2 animate-pulse" />
+              <p>Loading globe visualization...</p>
+            </div>
+          ) : (
+            <div ref={globeEl} className="w-full h-full" />
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// ======= KNOWLEDGE GRAPH COMPONENTS =======
 // Node data
 interface CustomNodeData {
   label: string;
@@ -155,6 +559,7 @@ const CustomEdge = ({
   return (
     <>
       <path
+        id={id}
         style={{
           strokeWidth: 2,
           stroke: edgeColor,
@@ -179,128 +584,6 @@ const CustomEdge = ({
   );
 };
 
-// Globe Visualization Component
-const GlobeVisualization = ({ data, isVisible }) => {
-  const globeEl = useRef(null);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient || !globeEl.current || !isVisible) return;
-
-    // We're simulating the GlobeGL functionality since we can't import it directly
-    const globeContainer = globeEl.current;
-    globeContainer.innerHTML = '';
-    
-    // Create a placeholder for the globe
-    const globePlaceholder = document.createElement('div');
-    globePlaceholder.className = 'w-full h-full flex items-center justify-center bg-gray-100 rounded-lg relative overflow-hidden';
-    
-    // Add a circular element to represent the globe
-    const globeCircle = document.createElement('div');
-    globeCircle.className = 'w-40 h-40 rounded-full bg-blue-300 relative animate-pulse';
-    globeCircle.style.background = 'radial-gradient(circle at 30% 30%, #60a5fa, #1e40af)';
-    
-    // Add points to simulate the data points
-    data.forEach(point => {
-      const pointEl = document.createElement('div');
-      pointEl.className = 'absolute w-2 h-2 rounded-full';
-      pointEl.style.backgroundColor = point.color || 'rgba(255, 100, 50, 0.8)';
-      
-      // Convert lat/lng to position on the circle (simplified)
-      const angle = (point.lng + 180) * (Math.PI / 180);
-      const radius = 70 * (1 - Math.abs(point.lat) / 90);
-      const x = 20 + radius * Math.cos(angle);
-      const y = 20 + radius * Math.sin(angle);
-      
-      pointEl.style.left = `calc(50% + ${x}px)`;
-      pointEl.style.top = `calc(50% + ${y}px)`;
-      pointEl.style.transform = 'translate(-50%, -50%)';
-      
-      // Add pulse animation for the point
-      const pulseAnimation = document.createElement('div');
-      pulseAnimation.className = 'absolute w-4 h-4 rounded-full animate-ping';
-      pulseAnimation.style.backgroundColor = point.color || 'rgba(255, 100, 50, 0.4)';
-      pulseAnimation.style.opacity = '0.6';
-      
-      pointEl.appendChild(pulseAnimation);
-      globeCircle.appendChild(pointEl);
-      
-      // Add tooltip on hover
-      pointEl.addEventListener('mouseenter', () => {
-        const tooltip = document.createElement('div');
-        tooltip.className = 'absolute z-10 bg-black text-white text-xs p-1 rounded';
-        tooltip.style.left = `calc(50% + ${x}px)`;
-        tooltip.style.top = `calc(50% + ${y - 20}px)`;
-        tooltip.style.transform = 'translate(-50%, -100%)';
-        tooltip.textContent = `${point.name}: $${point.value.toLocaleString()}`;
-        globePlaceholder.appendChild(tooltip);
-        
-        pointEl.addEventListener('mouseleave', () => {
-          tooltip.remove();
-        });
-      });
-    });
-    
-    // Add continents outlines (simplified)
-    const continentsOverlay = document.createElement('div');
-    continentsOverlay.className = 'absolute inset-0 opacity-30';
-    continentsOverlay.style.backgroundImage = 'url(\'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/BlankMap-World.svg/1280px-BlankMap-World.svg.png\')';
-    continentsOverlay.style.backgroundSize = 'cover';
-    continentsOverlay.style.backgroundPosition = 'center';
-    continentsOverlay.style.mixBlendMode = 'overlay';
-    
-    globeCircle.appendChild(continentsOverlay);
-    globePlaceholder.appendChild(globeCircle);
-    globeContainer.appendChild(globePlaceholder);
-    
-    // Add rotation animation
-    let rotation = 0;
-    const rotateGlobe = () => {
-      rotation += 0.2;
-      continentsOverlay.style.backgroundPosition = `${rotation % 360}px center`;
-      requestAnimationFrame(rotateGlobe);
-    };
-    
-    rotateGlobe();
-    
-    return () => {
-      // Cleanup if necessary
-    };
-  }, [data, isClient, isVisible]);
-  
-  if (!isVisible) return null;
-  
-  return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center">
-          <Globe className="h-5 w-5 mr-2" />
-          <CardTitle>Global Sales Distribution</CardTitle>
-        </div>
-        <CardDescription>
-          Visualization of sales around the world
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="aspect-video bg-background rounded-md flex items-center justify-center relative">
-          {!isClient ? (
-            <div className="text-center text-muted-foreground">
-              <Globe className="h-12 w-12 mx-auto mb-2" />
-              <p>Loading globe visualization...</p>
-            </div>
-          ) : (
-            <div ref={globeEl} className="w-full h-full" />
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
 const nodeTypes = {
   product: (props: any) => <CustomNode {...props} type="product" />,
   customer: (props: any) => <CustomNode {...props} type="customer" />,
@@ -308,22 +591,14 @@ const nodeTypes = {
   channel: (props: any) => <CustomNode {...props} type="channel" />,
 };
 
-const SalesKnowledgeGraph = () => {
-  // Globe visualization data
-  const globeData = [
-    { lat: 40.7128, lng: -74.0060, name: 'New York', value: 4200000, color: '#3b82f6' },
-    { lat: 34.0522, lng: -118.2437, name: 'Los Angeles', value: 3800000, color: '#3b82f6' },
-    { lat: 51.5074, lng: -0.1278, name: 'London', value: 5100000, color: '#f59e0b' },
-    { lat: 48.8566, lng: 2.3522, name: 'Paris', value: 2900000, color: '#f59e0b' },
-    { lat: 35.6762, lng: 139.6503, name: 'Tokyo', value: 6200000, color: '#10b981' },
-    { lat: 22.3193, lng: 114.1694, name: 'Hong Kong', value: 3500000, color: '#10b981' },
-    { lat: -33.8688, lng: 151.2093, name: 'Sydney', value: 2100000, color: '#8b5cf6' },
-    { lat: 19.4326, lng: -99.1332, name: 'Mexico City', value: 1800000, color: '#8b5cf6' },
-    { lat: -23.5505, lng: -46.6333, name: 'São Paulo', value: 2300000, color: '#8b5cf6' },
-  ];
+const edgeTypes = {
+  custom: CustomEdge,
+};
 
+// ======= MAIN COMPONENT =======
+const SalesKnowledgeGraph = () => {
   // Map custom nodes to ReactFlow nodes
-  const initialNodes = knowledgeGraphNodes.map((node: KnowledgeGraphNode) => ({
+  const initialNodes = knowledgeGraphNodes.map((node) => ({
     id: node.id,
     type: node.type,
     position: node.position,
@@ -331,7 +606,7 @@ const SalesKnowledgeGraph = () => {
   }));
 
   // Map custom edges to ReactFlow edges
-  const initialEdges = knowledgeGraphEdges.map((edge: KnowledgeGraphEdge) => ({
+  const initialEdges = knowledgeGraphEdges.map((edge) => ({
     id: edge.id,
     source: edge.source,
     target: edge.target,
@@ -344,7 +619,6 @@ const SalesKnowledgeGraph = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showGlobe, setShowGlobe] = useState(true);
 
   // Add node movement animation
   useEffect(() => {
@@ -379,10 +653,6 @@ const SalesKnowledgeGraph = () => {
     setEdges(initialEdges);
   };
 
-  const toggleGlobe = () => {
-    setShowGlobe(!showGlobe);
-  };
-
   // Filter nodes based on search query
   const filteredNodes = nodes.filter(node => 
     node.data.label.toLowerCase().includes(searchQuery.toLowerCase())
@@ -394,13 +664,9 @@ const SalesKnowledgeGraph = () => {
     filteredNodes.some(node => node.id === edge.target)
   );
 
-  const edgeTypes = {
-    custom: CustomEdge,
-  };
-
   return (
-    <div className="w-full h-full grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div className="knowledge-graph md:col-span-2 h-96 md:h-full">
+    <div className="w-full h-full grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="knowledge-graph lg:col-span-2 h-[600px] lg:h-[800px]">
         <ReactFlow
           nodes={filteredNodes}
           edges={filteredEdges}
@@ -467,18 +733,16 @@ const SalesKnowledgeGraph = () => {
             </div>
           </Panel>
           <Panel position="top-right">
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={resetLayout} className="flex items-center gap-1">
-                <RotateCw className="w-4 h-4" />
-                <span className="text-xs">Reset</span>
-              </Button>
-            </div>
+            <Button size="sm" variant="outline" onClick={resetLayout} className="flex items-center gap-1">
+              <RotateCw className="w-4 h-4" />
+              <span className="text-xs">Reset</span>
+            </Button>
           </Panel>
         </ReactFlow>
       </div>
       
-      <div className="md:col-span-1 h-96 md:h-full">
-        <GlobeVisualization data={globeData} isVisible={true} />
+      <div className="lg:col-span-1 h-[600px] lg:h-[800px]">
+        <GlobeVisualization data={globeData} />
       </div>
     </div>
   );
