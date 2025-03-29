@@ -240,165 +240,223 @@ interface GlobeVisualizationProps {
 const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({ className, data }) => {
   const globeEl = useRef<HTMLDivElement>(null);
   const [isClient, setIsClient] = useState(false);
-  const [globeLoaded, setGlobeLoaded] = useState(false);
   
   useEffect(() => {
     setIsClient(true);
-    
-    // Dynamically load Globe.gl
-    const loadGlobe = async () => {
-      try {
-        setGlobeLoaded(true);
-      } catch (error) {
-        console.error("Failed to load Globe.gl:", error);
-      }
-    };
-    
-    loadGlobe();
   }, []);
   
   useEffect(() => {
-    if (!isClient || !globeEl.current || !globeLoaded) return;
+    if (!isClient || !globeEl.current) return;
     
-    const initGlobe = async () => {
-      try {
-        // Using dynamic import for Globe.gl
-        const GlobeGL = (await import('globe.gl')).default;
-        
-        // Clear previous globe instances
-        globeEl.current.innerHTML = '';
-        
-        // Generate arcs data based on connections between points
-        const arcsData = [];
-        const pointsMap = new Map(data.map(point => [point.name, point]));
-        
-        // Create connections between related points
-        data.forEach(source => {
-          if (source.connections) {
-            source.connections.forEach(targetName => {
-              const target = pointsMap.get(targetName);
-              if (target) {
-                arcsData.push({
-                  startLat: source.lat,
-                  startLng: source.lng,
-                  endLat: target.lat,
-                  endLng: target.lng,
-                  color: source.color || '#ffaa00'
-                });
-              }
-            });
-          }
-        });
-        
-        // Create globe instance
-        const globe = new GlobeGL()
-          .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-          .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-          // Configure points (cities)
-          .pointsData(data)
-          .pointLat(d => d.lat)
-          .pointLng(d => d.lng)
-          .pointColor(d => d.color || 'rgba(255, 100, 50, 0.8)')
-          .pointRadius(d => Math.sqrt(d.value) * 0.08)
-          .pointAltitude(0.01)
-          .pointLabel(d => `${d.name}: $${d.value.toLocaleString()}`)
-          // Configure arcs (connections)
-          .arcsData(arcsData)
-          .arcStartLat(d => d.startLat)
-          .arcStartLng(d => d.startLng)
-          .arcEndLat(d => d.endLat)
-          .arcEndLng(d => d.endLng)
-          .arcColor(d => d.color)
-          .arcDashLength(0.4)
-          .arcDashGap(0.2)
-          .arcDashAnimateTime(2000)
-          .arcsTransitionDuration(1000)
-          .arcStroke(0.5)
-          // Interactive features
-          .onPointHover(point => {
-            document.body.style.cursor = point ? 'pointer' : 'default';
+    // Fallback visualization that doesn't depend on Globe.gl
+    if (globeEl.current) {
+      globeEl.current.innerHTML = '';
+      
+      // Create SVG element for the globe
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('width', '100%');
+      svg.setAttribute('height', '100%');
+      svg.setAttribute('viewBox', '0 0 500 500');
+      svg.style.overflow = 'visible';
+      
+      // Create globe circle
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', '250');
+      circle.setAttribute('cy', '250');
+      circle.setAttribute('r', '200');
+      circle.setAttribute('fill', 'url(#globeGradient)');
+      circle.setAttribute('stroke', '#60a5fa');
+      circle.setAttribute('stroke-width', '2');
+      
+      // Create gradient
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
+      gradient.setAttribute('id', 'globeGradient');
+      gradient.setAttribute('cx', '30%');
+      gradient.setAttribute('cy', '30%');
+      
+      const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+      stop1.setAttribute('offset', '0%');
+      stop1.setAttribute('stop-color', '#60a5fa');
+      
+      const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+      stop2.setAttribute('offset', '100%');
+      stop2.setAttribute('stop-color', '#1e40af');
+      
+      gradient.appendChild(stop1);
+      gradient.appendChild(stop2);
+      defs.appendChild(gradient);
+      svg.appendChild(defs);
+      
+      // Add lines for globe grid
+      for (let i = 0; i < 360; i += 30) {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+        line.setAttribute('cx', '250');
+        line.setAttribute('cy', '250');
+        line.setAttribute('rx', '200');
+        line.setAttribute('ry', '200');
+        line.setAttribute('fill', 'none');
+        line.setAttribute('stroke', 'rgba(255,255,255,0.2)');
+        line.setAttribute('stroke-width', '1');
+        line.setAttribute('transform', `rotate(${i} 250 250)`);
+        svg.appendChild(line);
+      }
+      
+      // Add meridians
+      for (let i = 20; i < 180; i += 40) {
+        const meridian = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+        meridian.setAttribute('cx', '250');
+        meridian.setAttribute('cy', '250');
+        meridian.setAttribute('rx', 200 * Math.sin(i * Math.PI / 180));
+        meridian.setAttribute('ry', '200');
+        meridian.setAttribute('fill', 'none');
+        meridian.setAttribute('stroke', 'rgba(255,255,255,0.2)');
+        meridian.setAttribute('stroke-width', '1');
+        svg.appendChild(meridian);
+      }
+      
+      svg.appendChild(circle);
+      
+      // Generate connection lines between cities
+      const pointsMap = new Map(data.map(point => [point.name, point]));
+      
+      data.forEach(source => {
+        if (source.connections) {
+          source.connections.forEach(targetName => {
+            const target = pointsMap.get(targetName);
+            if (target) {
+              // Calculate positions on the globe
+              const sourcePos = latLngToPos(source.lat, source.lng, 250, 250, 200);
+              const targetPos = latLngToPos(target.lat, target.lng, 250, 250, 200);
+              
+              // Create arc path between points
+              const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+              
+              // Create a curved path between the two points
+              const midX = (sourcePos.x + targetPos.x) / 2;
+              const midY = (sourcePos.y + targetPos.y) / 2;
+              const distance = Math.sqrt(Math.pow(targetPos.x - sourcePos.x, 2) + Math.pow(targetPos.y - sourcePos.y, 2));
+              const curvature = Math.min(0.2, distance / 1000);
+              
+              // Calculate control point (above the midpoint)
+              const controlX = midX;
+              const controlY = midY - distance * curvature;
+              
+              path.setAttribute('d', `M${sourcePos.x},${sourcePos.y} Q${controlX},${controlY} ${targetPos.x},${targetPos.y}`);
+              path.setAttribute('fill', 'none');
+              path.setAttribute('stroke', source.color || '#ffaa00');
+              path.setAttribute('stroke-width', '2');
+              path.setAttribute('stroke-dasharray', '5,5');
+              path.setAttribute('opacity', '0.7');
+              
+              // Animate the path
+              const animate = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+              animate.setAttribute('attributeName', 'stroke-dashoffset');
+              animate.setAttribute('from', '0');
+              animate.setAttribute('to', '10');
+              animate.setAttribute('dur', '1s');
+              animate.setAttribute('repeatCount', 'indefinite');
+              
+              path.appendChild(animate);
+              svg.appendChild(path);
+            }
           });
-          
-        // Mount to DOM
-        globe(globeEl.current);
+        }
+      });
+      
+      // Add city points
+      data.forEach(point => {
+        const pos = latLngToPos(point.lat, point.lng, 250, 250, 200);
         
-        // Auto-rotate
-        globe.controls().autoRotate = true;
-        globe.controls().autoRotateSpeed = 0.5;
+        // Add point
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', pos.x.toString());
+        circle.setAttribute('cy', pos.y.toString());
         
-        // Set initial position
-        globe.pointOfView({ lat: 39.6, lng: -98.5, altitude: 2.5 });
+        // Scale point based on value
+        const radius = Math.sqrt(point.value) * 0.04;
+        circle.setAttribute('r', radius.toString());
+        circle.setAttribute('fill', point.color || '#ffaa00');
         
-        // Handle window resize
-        const handleResize = () => {
-          if (globeEl.current) {
-            const { width, height } = globeEl.current.getBoundingClientRect();
-            globe.width(width);
-            globe.height(height);
-          }
-        };
+        // Add glow effect
+        const glow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        glow.setAttribute('cx', pos.x.toString());
+        glow.setAttribute('cy', pos.y.toString());
+        glow.setAttribute('r', (radius * 2).toString());
+        glow.setAttribute('fill', point.color || '#ffaa00');
+        glow.setAttribute('opacity', '0.3');
         
-        window.addEventListener('resize', handleResize);
-        handleResize();
+        // Add pulse animation
+        const animate = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+        animate.setAttribute('attributeName', 'r');
+        animate.setAttribute('values', `${radius};${radius * 3};${radius}`);
+        animate.setAttribute('dur', '2s');
+        animate.setAttribute('repeatCount', 'indefinite');
         
-        return () => {
-          window.removeEventListener('resize', handleResize);
-          if (globe && typeof globe._destructor === 'function') {
-            globe._destructor();
-          }
-        };
-      } catch (error) {
-        console.error("Error initializing globe:", error);
+        glow.appendChild(animate);
         
-        // Fallback visualization if Globe.gl fails to load
-        if (globeEl.current) {
-          globeEl.current.innerHTML = '';
-          const fallbackEl = document.createElement('div');
-          fallbackEl.className = 'w-full h-full flex flex-col items-center justify-center';
-          
-          const globeCircle = document.createElement('div');
-          globeCircle.className = 'w-64 h-64 rounded-full relative';
-          globeCircle.style.background = 'radial-gradient(circle at 30% 30%, #60a5fa, #1e40af)';
-          globeCircle.style.boxShadow = '0 0 40px rgba(59, 130, 246, 0.5)';
-          
-          // Add points to simulate cities
-          data.forEach(point => {
-            const pointEl = document.createElement('div');
-            pointEl.className = 'absolute w-3 h-3 rounded-full';
-            pointEl.style.backgroundColor = point.color || '#ffaa00';
-            
-            // Convert lat/lng to position on the globe circle
-            const phi = (90 - point.lat) * (Math.PI / 180);
-            const theta = (point.lng + 180) * (Math.PI / 180);
-            const x = -1 * Math.sin(phi) * Math.cos(theta);
-            const y = Math.cos(phi);
-            const scale = 100;
-            
-            pointEl.style.left = `${50 + x * scale}%`;
-            pointEl.style.top = `${50 - y * scale}%`;
-            pointEl.style.transform = 'translate(-50%, -50%)';
-            
-            // Add pulse animation
-            const pulse = document.createElement('div');
-            pulse.className = 'absolute inset-0 rounded-full animate-ping';
-            pulse.style.backgroundColor = point.color || '#ffaa00';
-            pulse.style.opacity = '0.6';
-            pointEl.appendChild(pulse);
-            
-            // Add tooltip
-            pointEl.title = `${point.name}: $${point.value.toLocaleString()}`;
-            
-            globeCircle.appendChild(pointEl);
-          });
-          
-          fallbackEl.appendChild(globeCircle);
-          globeEl.current.appendChild(fallbackEl);
+        // Add tooltip on hover
+        const tooltip = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        tooltip.textContent = `${point.name}: ${point.value.toLocaleString()}`;
+        circle.appendChild(tooltip);
+        
+        svg.appendChild(glow);
+        svg.appendChild(circle);
+      });
+      
+      // Add animated rotation
+      let rotation = 0;
+      const rotateGlobe = () => {
+        rotation += 0.1;
+        svg.style.transform = `rotateY(${rotation}deg)`;
+        requestAnimationFrame(rotateGlobe);
+      };
+      
+      // Helper function to convert lat/lng to position on the sphere
+      function latLngToPos(lat, lng, centerX, centerY, radius) {
+        // Convert to radians
+        const phi = (90 - lat) * (Math.PI / 180);
+        const theta = (lng + 180) * (Math.PI / 180);
+        
+        // Calculate 3D position
+        const x = -radius * Math.sin(phi) * Math.cos(theta);
+        const y = radius * Math.cos(phi);
+        const z = radius * Math.sin(phi) * Math.sin(theta);
+        
+        // Convert to 2D with perspective
+        // Only show points on the front side of the globe
+        if (z < 0) {
+          return {
+            x: centerX + x,
+            y: centerY - y,
+            visible: true
+          };
+        } else {
+          return {
+            x: centerX + x,
+            y: centerY - y,
+            visible: false
+          };
         }
       }
-    };
-    
-    initGlobe();
-  }, [data, isClient, globeLoaded]);
+      
+      globeEl.current.appendChild(svg);
+      
+      // Add controls for basic interaction
+      const controls = document.createElement('div');
+      controls.className = 'absolute bottom-2 right-2 flex gap-2';
+      
+      // Create a wrapper for the controls
+      const rotateBtn = document.createElement('button');
+      rotateBtn.className = 'p-2 bg-white rounded-full shadow flex items-center justify-center hover:bg-gray-100';
+      rotateBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z"></path><path d="M17 12H3"></path><path d="m11 6-4 6 4 6"></path></svg>';
+      rotateBtn.title = 'Rotate Globe';
+      rotateBtn.onclick = rotateGlobe;
+      
+      controls.appendChild(rotateBtn);
+      globeEl.current.appendChild(controls);
+    }
+  }, [data, isClient]);
   
   return (
     <Card className={`${className || ''} dashboard-card h-full`}>
