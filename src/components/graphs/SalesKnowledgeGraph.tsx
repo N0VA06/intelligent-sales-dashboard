@@ -22,7 +22,7 @@ import { KnowledgeGraphNode, KnowledgeGraphEdge } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Search, ZoomIn, ZoomOut, RotateCw, Globe } from 'lucide-react';
-import GlobeVisualization from './GlobeVisualization'; // Import our new 3D globe component
+import GlobeVisualization from './GlobeVisualization'; // Import our canvas-based globe component
 
 // Node data
 interface CustomNodeData {
